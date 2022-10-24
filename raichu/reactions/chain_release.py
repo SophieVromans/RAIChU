@@ -8,7 +8,7 @@ from pikachu.general import structure_to_smiles
 from raichu.data.molecular_moieties import SC_BOND, O_OH, O_BETAPROPRIOLACTONE_O,\
     O_BETAPROPRIOLACTONE_TERMINAL_O
 from raichu.reactions.general import initialise_atom_attributes
-from raichu.drawing.RaichuDrawer import RaichuDrawer
+from raichu.drawing.drawer import RaichuDrawer
 
 
 def release_linear_reduction(chain_intermediate: Structure) -> Structure:

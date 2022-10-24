@@ -114,7 +114,12 @@ class TailoringDomainType(Enum):
     DUMMY_ZGDH = 15 #Z-Gamma-beta-dehydrogenase
     DUMMY_EGDH = 16 #E-Gamma-beta-dehydrogenase
     DUMMY_OMT = 17 #Beta-Hydroxymethyltransferase
-    DUMMY_BMT = 28 #Beta-Methyltransferase
+    DUMMY_BMT = 18 #Beta-Methyltransferase
+    DUMMY_ER = 19
+    DUMMY_KR = 20
+    DUMMY_DH = 21
+    DUMMY_E = 22
+    DUMMY_nMT = 23
     @staticmethod
     def from_string(label: str) -> "TailoringDomainType":
         for value in TailoringDomainType:
@@ -164,7 +169,7 @@ class KSDomainSubtype(Enum):
     TRANS_AT_PKS_OUT = 13
     TRANS_AT_PKS_SHDB = 14
     TRANS_AT_PKS_BETA_OH_KETO = 15
-    TRANS_AT_PKS_OXA = 16 
+    TRANS_AT_PKS_OXA = 16
     TRANS_AT_PKS_ACST = 17
     TRANS_AT_PKS_ALPHAME_BETAOH = 18
     TRANS_AT_PKS_NON_ELOGATING_OXA = 19

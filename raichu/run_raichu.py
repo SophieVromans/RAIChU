@@ -60,7 +60,10 @@ def build_cluster(cluster_repr: ClusterRepresentation,
         modules.append(module)
 
     cluster = Cluster(modules)
-    return cluster
+    print ("cluster_before",cluster)
+    cluster_with_processed_trans_at_pks = cluster.handle_transat()
+    print ("cluster_after",cluster_with_processed_trans_at_pks)
+    return cluster_with_processed_trans_at_pks
 
 
 def get_spaghettis(cluster_repr: ClusterRepresentation) -> List[str]:
@@ -82,6 +85,21 @@ if __name__ == "__main__":
                                                                 DomainRepresentation("gene 1", 'KR', 'A1', None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
+                                                                                     True)
+                                                                ]),
+                                          ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
+                                                               [DomainRepresentation("gene 1", 'KS', "TRANS_AT_PKS_BETA_OH", None, True,
+
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'AT', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'KR', "A1", None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ER', None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)

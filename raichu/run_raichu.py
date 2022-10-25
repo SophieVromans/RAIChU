@@ -130,6 +130,7 @@ def get_spaghettis(cluster_repr: ClusterRepresentation) -> List[str]:
     for module in cluster.modules:
         print(module.domains)
     cluster.compute_structures(compute_cyclic_products=False)
+    cluster.draw_cluster()
     spaghettis = cluster.draw_spaghettis()
 
     return spaghettis
@@ -139,11 +140,11 @@ if __name__ == "__main__":
     cluster_repr = ClusterRepresentation([ModuleRepresentation("PKS", "PKS_CIS", "ACETYL_COA",
                                                                [DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
-                                                                                     True),
                                                                 DomainRepresentation("gene 1", 'KR', 'A1', None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_CIS", "METHYLMALONYL_COA",
@@ -153,12 +154,12 @@ if __name__ == "__main__":
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'KR', "B1", None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
-                                                                                     True),
                                                                 DomainRepresentation("gene 1", 'ER', "S", None, True,
                                                                                      True),
+                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
                                                                 DomainRepresentation("gene 1", 'UNKNOWN', None, "MyDOM",
-                                                                                     True, True),
+                                                                                     True, False),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
@@ -167,9 +168,13 @@ if __name__ == "__main__":
                                           ModuleRepresentation("NRPS", None, "tyrosine",
                                                                [DomainRepresentation("gene 1", 'C', None, None, True,
                                                                                      True),
+                                                                DomainRepresentation("gene 1", 'nMT', None, None, True,
+                                                                                     True),
                                                                 DomainRepresentation("gene 1", 'A', None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'PCP', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'E', None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'TE', None, None, True,
                                                                                      True)

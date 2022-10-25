@@ -1,10 +1,12 @@
 from typing import List
 
 from pikachu.drawing.drawing import Drawer
+from matplotlib import pyplot as plt
 
 from raichu.reactions.chain_release import cyclic_release
 from raichu.drawing.drawer import RaichuDrawer
 from raichu.module import _Module
+from raichu.drawing.bubbles import draw_bubbles
 
 
 class Cluster:
@@ -55,7 +57,9 @@ class Cluster:
         return spaghetti_svgs + [linear_svg]
 
     def draw_cluster(self):
-        pass
+        svg = draw_bubbles(self)
+        with open('testy.svg', 'w') as svg_out:
+            svg_out.write(svg)
 
 
 class Mechanism:

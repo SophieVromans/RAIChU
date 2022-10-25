@@ -1,3 +1,4 @@
+from typing import List, Union
 from typing import Union
 from pikachu.chem.structure import Structure
 from pikachu.general import read_smiles
@@ -10,8 +11,11 @@ from raichu.reactions.chain_release import release_linear_reduction, release_lin
 from raichu.domain.domain_types import DomainSuperClass, RecognitionDomainType, CarrierDomainType, \
     TailoringDomainType, SynthesisDomainType, TerminationDomainType, KSDomainSubtype, KRDomainSubtype, ERDomainSubtype
 from dataclasses import dataclass
-
-
+from raichu.domain.domain_types import TailoringDomainType, TerminationDomainType, CarrierDomainType, \
+    SynthesisDomainType, RecognitionDomainType
+from dataclasses import dataclass    
+    
+ 
 @dataclass
 class Domain:
     supertype: DomainSuperClass
@@ -48,14 +52,14 @@ class TailoringDomain(Domain):
         superclass = DomainSuperClass.from_string("TAILORING")
         domain_type = TailoringDomainType.from_string(domain_type)
         if domain_subtype is not None:
-            if domain_type.name == 'KR':
+            if 'KR'  in domain_type.name:
                 domain_subtype = KRDomainSubtype.from_string(domain_subtype)
             elif domain_type.name == 'ER':
                 domain_subtype = ERDomainSubtype.from_string(domain_subtype)
             else:
                 raise ValueError(f"RAIChU does not support domain subtypes for {domain_type.name}")
         else:
-            if domain_type.name == 'KR':
+            if domain_type.name == 'KR' or domain_type.name == 'DUMMY_KR':
                 domain_subtype = KRDomainSubtype.from_string("UNKNOWN")
             elif domain_type.name == 'ER':
                 domain_subtype = ERDomainSubtype.from_string("UNKNOWN")
@@ -121,6 +125,7 @@ class RecognitionDomain(Domain):
 
         superclass = DomainSuperClass.from_string("RECOGNITION")
         domain_type = RecognitionDomainType.from_string(domain_type)
+ 
 
         if domain_subtype is not None:
             raise ValueError(f"RAIChU does not support domain subtypes for {domain_type.name}")
@@ -177,3 +182,60 @@ class TerminationDomain(Domain):
             return release_linear_reduction(structure)
         else:
             raise ValueError(f"Unknown type of termination domain: {self.type}")
+   
+DOMAIN_TO_SUPERTYPE = {}
+for domain_name in TailoringDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = TailoringDomain
+for domain_name in CarrierDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = CarrierDomain
+for domain_name in SynthesisDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = SynthesisDomain
+for domain_name in RecognitionDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = RecognitionDomain
+for domain_name in TerminationDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = TerminationDomain
+DOMAIN_TO_SUPERTYPE["UNKNOWN"] = UnknownDomain
+
+@dataclass
+class DomainRepresentation:
+    gene_name: Union[str, None]
+    type: str
+    subtype: Union[str, None]
+    name: Union[str, None]
+    active: bool
+    used: bool
+
+
+@dataclass
+class ModuleRepresentation:
+    type: str
+    subtype: Union[str, None]
+    substrate: str
+    domains: List[DomainRepresentation]
+
+
+@dataclass
+class ClusterRepresentation:
+    modules: List[ModuleRepresentation]
+    
+def make_domain(domain_repr: DomainRepresentation, substrate: str, strict: bool = True) -> Domain:
+    domain_class = DOMAIN_TO_SUPERTYPE.get(domain_repr.type)
+    if domain_class:
+        if domain_class == RecognitionDomain:
+            domain = domain_class(domain_repr.type, substrate, domain_subtype=domain_repr.subtype,
+                                  active=domain_repr.active,
+                                  used=domain_repr.used)
+        elif domain_class == UnknownDomain:
+            domain = domain_class(domain_repr.type, domain_subtype=domain_repr.subtype,
+                                  domain_name=domain_repr.name,
+                                  active=domain_repr.active, used=domain_repr.used)
+        else:
+            domain = domain_class(domain_repr.type, domain_subtype=domain_repr.subtype, active=domain_repr.active,
+                                  used=domain_repr.used)
+    elif strict:
+        raise ValueError(f"Unrecognised domain type: {domain_repr.type}")
+    else:
+        domain = UnknownDomain(domain_repr.type, domain_subtype=domain_repr.subtype, active=domain_repr.active,
+                               used=False)
+
+    return domain

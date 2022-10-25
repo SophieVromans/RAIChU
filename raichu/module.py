@@ -78,7 +78,11 @@ class PKSDomainType(Enum):
     DUMMY_EGDH = 18 #E-Gamma-beta-dehydrogenase
     DUMMY_OMT = 19 #Beta-Hydroxymethyltransferase
     DUMMY_BMT = 20 #Beta-Methyltransferase
-
+    DUMMY_ER = 21
+    DUMMY_KR = 22
+    DUMMY_DH = 23
+    DUMMY_E = 24
+    DUMMY_nMT = 25
     @staticmethod
     def from_string(label: str) -> "PKSDomainType":
         for value in PKSDomainType:

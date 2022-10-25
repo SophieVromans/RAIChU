@@ -3,7 +3,7 @@ import os
 
 from raichu.cluster import Cluster
 from raichu.domain.domain import TailoringDomain, CarrierDomain, SynthesisDomain, RecognitionDomain, \
-    TerminationDomain, UnknownDomain, Domain, make_domain, ModuleRepresentation, DomainRepresentation, ClusterRepresentation
+    TerminationDomain, UnknownDomain, Domain
 from raichu.module import PKSModuleSubtype, NRPSModule, LinearPKSModule, IterativePKSModule, TransATPKSModule,\
     ModuleType
 from raichu.domain.domain_types import TailoringDomainType, TerminationDomainType, CarrierDomainType, \
@@ -11,8 +11,65 @@ from raichu.domain.domain_types import TailoringDomainType, TerminationDomainTyp
 from dataclasses import dataclass
 
 
-def build_cluster(cluster_repr: ClusterRepresentation,
-                  strict: bool = True) -> Cluster:
+DOMAIN_TO_SUPERTYPE = {}
+for domain_name in TailoringDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = TailoringDomain
+for domain_name in CarrierDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = CarrierDomain
+for domain_name in SynthesisDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = SynthesisDomain
+for domain_name in RecognitionDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = RecognitionDomain
+for domain_name in TerminationDomainType.__members__:
+    DOMAIN_TO_SUPERTYPE[domain_name] = TerminationDomain
+DOMAIN_TO_SUPERTYPE["UNKNOWN"] = UnknownDomain
+
+
+@dataclass
+class DomainRepresentation:
+    gene_name: Union[str, None]
+    type: str
+    subtype: Union[str, None]
+    name: Union[str, None]
+    active: bool
+    used: bool
+
+
+@dataclass
+class ModuleRepresentation:
+    type: str
+    subtype: Union[str, None]
+    substrate: str
+    domains: List[DomainRepresentation]
+
+
+@dataclass
+class ClusterRepresentation:
+    modules: List[ModuleRepresentation]
+
+
+def make_domain(domain_repr: DomainRepresentation, substrate: str, strict: bool = True) -> Domain:
+    domain_class = DOMAIN_TO_SUPERTYPE.get(domain_repr.type)
+    if domain_class:
+        if domain_class == RecognitionDomain:
+            domain = domain_class(domain_repr.type, substrate, domain_subtype=domain_repr.subtype,
+                                  active=domain_repr.active,
+                                  used=domain_repr.used)
+        elif domain_class == UnknownDomain:
+            domain = UnknownDomain(domain_repr.name)
+        else:
+            domain = domain_class(domain_repr.type, domain_subtype=domain_repr.subtype, active=domain_repr.active,
+                                  used=domain_repr.used)
+    elif strict:
+        raise ValueError(f"Unrecognised domain type: {domain_repr.type}")
+    else:
+        domain = UnknownDomain(domain_repr.name)
+
+    return domain
+
+
+def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> Cluster:
+
     modules = []
     for i, module_repr in enumerate(cluster_repr.modules):
         if i == 0:
@@ -60,10 +117,13 @@ def build_cluster(cluster_repr: ClusterRepresentation,
         modules.append(module)
 
     cluster = Cluster(modules)
-    print ("cluster_before",cluster)
-    cluster_with_processed_trans_at_pks = cluster.handle_transat()
-    print ("cluster_after",cluster_with_processed_trans_at_pks)
-    return cluster_with_processed_trans_at_pks
+
+    # print ("cluster_before",cluster)
+    # cluster_with_processed_trans_at_pks = cluster.handle_transat()
+    # print ("cluster_after",cluster_with_processed_trans_at_pks)
+    # return cluster_with_processed_trans_at_pks
+
+    return cluster
 
 
 def get_spaghettis(cluster_repr: ClusterRepresentation) -> List[str]:
@@ -90,7 +150,8 @@ if __name__ == "__main__":
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
-                                                               [DomainRepresentation("gene 1", 'KS', "TRANS_AT_PKS_BETA_OH", None, True,
+                                                               [DomainRepresentation("gene 1", 'KS',
+                                                                                     "TRANS_AT_PKS_BETA_OH", None, True,
 
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'AT', None, None, True,
@@ -105,7 +166,8 @@ if __name__ == "__main__":
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
-                                                               [DomainRepresentation("gene 1", 'KS', "TRANS_AT_PKS_BETA_OH", None, True,
+                                                               [DomainRepresentation("gene 1", 'KS',
+                                                                                     "TRANS_AT_PKS_BETA_OH", None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),

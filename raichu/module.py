@@ -67,6 +67,17 @@ class PKSDomainType(Enum):
     TE = 7
     TD = 8
     UNKNOWN = 9
+    DUMMY_ALMT = 10 #Alpha-L-Methyltransferase
+    DUMMY_AMT = 11 #Alpha-Methyltransferase
+    DUMMY_SC = 12 #Smalles cyclase for creating pyran/furan rings
+    DUMMY_ZDH = 13 #E-configured double bonds
+    DUMMY_EDH = 14 #Z-configured double bonds
+    DUMMY_AH = 15 #Alpha-hydroxylase
+    DUMMY_GDH = 16 #Gamma-beta-dehydrogenase
+    DUMMY_ZGDH = 17 #Z-Gamma-beta-dehydrogenase
+    DUMMY_EGDH = 18 #E-Gamma-beta-dehydrogenase
+    DUMMY_OMT = 19 #Beta-Hydroxymethyltransferase
+    DUMMY_BMT = 20 #Beta-Methyltransferase
 
     @staticmethod
     def from_string(label: str) -> "PKSDomainType":

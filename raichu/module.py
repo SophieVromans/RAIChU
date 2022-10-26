@@ -78,11 +78,15 @@ class PKSDomainType(Enum):
     DUMMY_EGDH = 18 #E-Gamma-beta-dehydrogenase
     DUMMY_OMT = 19 #Beta-Hydroxymethyltransferase
     DUMMY_BMT = 20 #Beta-Methyltransferase
+<<<<<<< HEAD
     DUMMY_ER = 21
     DUMMY_KR = 22
     DUMMY_DH = 23
     DUMMY_E = 24
     DUMMY_nMT = 25
+=======
+
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     @staticmethod
     def from_string(label: str) -> "PKSDomainType":
         for value in PKSDomainType:
@@ -130,36 +134,35 @@ class _Module:
                         self.tailoring_domains.append(domain)
                     else:
                         raise ValueError(f"Cannot have two used tailoring domains of type {domain.type.name} in one \
-                        module. Remove domain or set the 'used' or 'active' flag to False")
+module. Remove domain or set the 'used' or 'active' flag to False")
 
                 if isinstance(domain, RecognitionDomain):
                     if not self.recognition_domain:
                         self.recognition_domain = domain
                     else:
                         raise ValueError(f"Cannot have more than one used recognition domain in one \
-                        module. Remove a domain or set the 'used' or 'active' flag to False")
+module. Remove a domain or set the 'used' or 'active' flag to False")
 
                 if isinstance(domain, SynthesisDomain) and domain.is_elongating:
                     if not self.synthesis_domain:
                         self.synthesis_domain = domain
                     else:
-                        raise ValueError(f"Cannot have more than one used and elongating synthesis domains \
-                        in one module. Remove a domain, set the 'used' or 'active' flag to False, \
-                        or set the 'is_elongating' flag to False.")
+                        raise ValueError("Cannot have more than one used and elongating synthesis domains \
+in one module. Remove a domain, set the 'used' or 'active' flag to False, or set the 'is_elongating' flag to False.")
 
                 if isinstance(domain, CarrierDomain):
                     if not self.carrier_domain:
                         self.carrier_domain = domain
                     else:
-                        raise ValueError(f"Cannot have more than one used carrier domain in one \
-                        module. Remove a domain or set the 'used' or 'active' flag to False")
+                        raise ValueError("Cannot have more than one used carrier domain in one \
+module. Remove a domain or set the 'used' or 'active' flag to False")
 
                 if isinstance(domain, TerminationDomain):
                     if not self.termination_domain:
                         self.termination_domain = domain
                     else:
-                        raise ValueError(f"Cannot have more than one used termination domain in one \
-                        module. Remove a domain or set the 'used' or 'active' flag to False")
+                        raise ValueError("Cannot have more than one used termination domain in one \
+module. Remove a domain or set the 'used' or 'active' flag to False")
 
         if not self.is_starter_module and not self.synthesis_domain:
             if self.type.name == 'NRPS':
@@ -185,13 +188,13 @@ class _Module:
         dh_domain = self.get_tailoring_domain("DH")
         er_domain = self.get_tailoring_domain("ER")
 
-        if kr_domain and kr_domain.active:
+        if kr_domain and kr_domain.active and kr_domain.used:
             assert kr_domain.subtype is not None
             structure = kr_domain.do_tailoring(structure)
             if not kr_domain.subtype.name == 'C1' and not kr_domain.subtype.name == 'C2':
-                if dh_domain and dh_domain.active:
+                if dh_domain and dh_domain.active and dh_domain.used:
                     structure = dh_domain.do_tailoring(structure)
-                    if er_domain and er_domain.active:
+                    if er_domain and er_domain.active and er_domain.used:
                         structure = er_domain.do_tailoring(structure)
 
         return structure
@@ -200,9 +203,9 @@ class _Module:
         e_domain = self.get_tailoring_domain('E')
         n_mt_domain = self.get_tailoring_domain('nMT')
 
-        if e_domain and e_domain.active:
+        if e_domain and e_domain.active and e_domain.used:
             structure = e_domain.do_tailoring(structure)
-        if n_mt_domain and n_mt_domain.active:
+        if n_mt_domain and n_mt_domain.active and e_domain.used:
             structure = n_mt_domain.do_tailoring(structure)
 
         return structure

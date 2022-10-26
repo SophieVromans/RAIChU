@@ -9,10 +9,15 @@ from raichu.reactions.pks_elongation_reactions import pks_elongation
 from raichu.reactions.nrps_elongation_reactions import nrps_elongation
 from raichu.reactions.chain_release import release_linear_reduction, release_linear_thioesterase
 from raichu.domain.domain_types import DomainSuperClass, RecognitionDomainType, CarrierDomainType, \
+<<<<<<< HEAD
     TailoringDomainType, SynthesisDomainType, TerminationDomainType, KSDomainSubtype, KRDomainSubtype
 from dataclasses import dataclass
 from raichu.domain.domain_types import TailoringDomainType, TerminationDomainType, CarrierDomainType, \
     SynthesisDomainType, RecognitionDomainType
+=======
+    TailoringDomainType, SynthesisDomainType, TerminationDomainType, KSDomainSubtype, KRDomainSubtype, ERDomainSubtype
+
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
 from dataclasses import dataclass    
     
  
@@ -31,14 +36,19 @@ class Domain:
         if self.domain_name is None:
             self.domain_name = self.type.name
 
+    def __repr__(self):
+        return self.domain_name
+
     def set_gene(self, gene_name: str) -> None:
         self.gene = gene_name
 
 
 class UnknownDomain(Domain):
-    def __init__(self, domain_type: str, domain_subtype: Union[str, None] = None, active: bool = True,
-                 domain_name: Union[str, None] = None, used: bool = False) -> None:
-        superclass = DomainSuperClass.from_string("UNKNOWN")
+    def __init__(self, domain_name: str, active: bool = True) -> None:
+        superclass = DomainSuperClass.from_string("TAILORING")
+        domain_type = TailoringDomainType.from_string("UNKNOWN")
+        assert domain_name
+        super().__init__(superclass, domain_type, None, domain_name, active=active, used=False)
 
 
 class TailoringDomain(Domain):
@@ -49,11 +59,15 @@ class TailoringDomain(Domain):
         if domain_subtype is not None:
             if 'KR'  in domain_type.name:
                 domain_subtype = KRDomainSubtype.from_string(domain_subtype)
+            elif domain_type.name == 'ER':
+                domain_subtype = ERDomainSubtype.from_string(domain_subtype)
             else:
                 raise ValueError(f"RAIChU does not support domain subtypes for {domain_type.name}")
         else:
             if domain_type.name == 'KR' or domain_type.name == 'DUMMY_KR':
                 domain_subtype = KRDomainSubtype.from_string("UNKNOWN")
+            elif domain_type.name == 'ER':
+                domain_subtype = ERDomainSubtype.from_string("UNKNOWN")
 
         super().__init__(superclass, domain_type, domain_subtype, domain_name, active=active, used=used)
 
@@ -66,7 +80,7 @@ class TailoringDomain(Domain):
         elif self.type.name == 'DH':
             return dehydration(structure)
         elif self.type.name == 'ER':
-            return enoylreduction(structure)
+            return enoylreduction(structure, self.subtype)
         elif self.type.name == 'E':
             return epimerize(structure)
         elif self.type.name == 'nMT':

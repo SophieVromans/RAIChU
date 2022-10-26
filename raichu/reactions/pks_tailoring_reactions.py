@@ -2,7 +2,7 @@ from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner, find_
 from pikachu.chem.chirality import same_chirality
 from pikachu.chem.structure import Structure
 
-from raichu.domain.domain_types import KRDomainSubtype
+from raichu.domain.domain_types import KRDomainSubtype, ERDomainSubtype
 from raichu.reactions.general import initialise_atom_attributes
 
 
@@ -13,6 +13,8 @@ RECENT_REDUCTION_C = GroupDefiner('recent_reduction_mal', 'OCCC(=O)S', 2)
 RECENT_REDUCTION_CC = BondDefiner('recent_reduction_C-C', 'OCCC(=O)S', 1, 2)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
+ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
+ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
 
 
 def ketoreduction(chain_intermediate: Structure, kr_type: KRDomainSubtype) -> Structure:
@@ -243,7 +245,7 @@ def dehydration(chain_intermediate: Structure) -> Structure:
     return chain_intermediate
 
 
-def enoylreduction(chain_intermediate: Structure) -> Structure:
+def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -> Structure:
     """
     Performs the enoylreductase reaction on the PKS chain intermediate, returns
     the reaction product as a PIKAChU Structure object
@@ -270,8 +272,38 @@ def enoylreduction(chain_intermediate: Structure) -> Structure:
 
     # Give annotation to added H-atom
     initialise_atom_attributes(chain_intermediate)
-
-    # TODO: Set chirality depending on ER domain subtype
-
     chain_intermediate.refresh_structure()
+
+    er_carbons = set(find_atoms(ER_MMAL_CARBON, chain_intermediate))
+    if len(er_carbons) == 1 and er_subtype.name != "UNKNOWN":
+        er_carbon = list(er_carbons)[0]
+        if len(er_carbon.get_neighbours('H')) == 1 and len(er_carbon.get_neighbours('C')) == 3:
+            s_carbons = set(find_atoms(ER_S_CARBON, chain_intermediate))
+            assert len(s_carbons) == 1
+
+            s_carbon = list(s_carbons)[0]
+            bottom_carbon = None
+            sidechain_carbon = None
+            for carbon_neighbour in er_carbon.get_neighbours('C'):
+                if carbon_neighbour.annotations.in_central_chain and carbon_neighbour != s_carbon:
+                    bottom_carbon = carbon_neighbour
+                elif not carbon_neighbour.annotations.in_central_chain:
+                    sidechain_carbon = carbon_neighbour
+
+            hydrogen_neighbour = er_carbon.get_neighbour('H')
+            assert bottom_carbon and sidechain_carbon and hydrogen_neighbour
+
+            clockwise_s_order = [s_carbon, hydrogen_neighbour, sidechain_carbon, bottom_carbon]
+            has_s_chirality = same_chirality(clockwise_s_order, er_carbon.neighbours)
+            if er_subtype.name == 'S' and has_s_chirality:
+                er_carbon.chiral = 'clockwise'
+            elif er_subtype.name == 'S' and not has_s_chirality:
+                er_carbon.chiral = 'counterclockwise'
+            elif er_subtype.name == 'R' and not has_s_chirality:
+                er_carbon.chiral = 'clockwise'
+            elif er_subtype.name == 'R' and has_s_chirality:
+                er_carbon.chiral = 'counterclockwise'
+            else:
+                raise ValueError(f"RAIChU does not support ER domain subtype {er_subtype.name}")
+
     return chain_intermediate

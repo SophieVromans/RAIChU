@@ -11,7 +11,6 @@ class DomainSuperClass(Enum):
     CARRIER = 3
     TAILORING = 4
     TERMINATION = 5
-    UNKNOWN = 6
 
     @staticmethod
     def from_string(label: str) -> "DomainSuperClass":
@@ -120,6 +119,10 @@ class TailoringDomainType(Enum):
     DUMMY_DH = 21
     DUMMY_E = 22
     DUMMY_nMT = 23
+<<<<<<< HEAD
+=======
+
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     @staticmethod
     def from_string(label: str) -> "TailoringDomainType":
         for value in TailoringDomainType:
@@ -156,15 +159,25 @@ class KSDomainSubtype(Enum):
     """
     CIS = 1
     UNKNOWN = 2
+<<<<<<< HEAD
     TRANS_AT_PKS_NON_ELOGATING_BETA_L_OH = 3
     TRANS_AT_PKS_BETA_OH = 4
     TRANS_AT_PKS_NON_ELOGATING_ALPHAME_EDB = 5
+=======
+    TRANS_AT_PKS_NON_ELONGATING_BETA_L_OH = 3
+    TRANS_AT_PKS_BETA_OH = 4
+    TRANS_AT_PKS_NON_ELONGATING_ALPHAME_EDB = 5
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     TRANS_AT_PKS_OXI = 6
     TRANS_AT_PKS_ST = 7
     TRANS_AT_PKS_BETA_OH_EDB = 8
     TRANS_AT_PKS_UNST = 9
     TRANS_AT_PKS_BETA_D_OH = 10
+<<<<<<< HEAD
     TRANS_AT_PKS_NON_ELOGATING_BETA_OH = 11
+=======
+    TRANS_AT_PKS_NON_ELONGATING_BETA_OH = 11
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     TRANS_AT_PKS_LACST = 12
     TRANS_AT_PKS_OUT = 13
     TRANS_AT_PKS_SHDB = 14
@@ -172,7 +185,11 @@ class KSDomainSubtype(Enum):
     TRANS_AT_PKS_OXA = 16
     TRANS_AT_PKS_ACST = 17
     TRANS_AT_PKS_ALPHAME_BETAOH = 18
+<<<<<<< HEAD
     TRANS_AT_PKS_NON_ELOGATING_OXA = 19
+=======
+    TRANS_AT_PKS_NON_ELONGATING_OXA = 19
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     TRANS_AT_PKS_BETA_D_OME = 20
     TRANS_AT_PKS_ARST = 21
     TRANS_AT_PKS_ALPHABETA_OH = 22
@@ -181,23 +198,38 @@ class KSDomainSubtype(Enum):
     TRANS_AT_PKS_BETA_ME = 25
     TRANS_AT_PKS_EDB = 26
     TRANS_AT_PKS_BETA_MEDB = 27
+<<<<<<< HEAD
     TRANS_AT_PKS_NON_ELOGATING_DB = 28
+=======
+    TRANS_AT_PKS_NON_ELONGATING_DB = 28
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     TRANS_AT_PKS_ALPHAME_EDB = 29
     TRANS_AT_PKS_ALPHAME = 30
     TRANS_AT_PKS_ALPHAME_BETA_L_OH = 31
     TRANS_AT_PKS = 32
     TRANS_AT_PKS_AA = 33
     TRANS_AT_PKS_DB = 34
+<<<<<<< HEAD
     TRANS_AT_PKS_RED  = 35
     TRANS_AT_PKS_PYR = 36
     TRANS_AT_PKS_ALPHAME_BETA_D_OH = 37
     TRANS_AT_PKS_NON_ELOGATING = 38
+=======
+    TRANS_AT_PKS_RED = 35
+    TRANS_AT_PKS_PYR = 36
+    TRANS_AT_PKS_ALPHAME_BETA_D_OH = 37
+    TRANS_AT_PKS_NON_ELONGATING = 38
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
     TRANS_AT_PKS_MEOST = 39
     TRANS_AT_PKS_BETA_L_OH = 40
     TRANS_AT_PKS_ZDB = 41
     TRANS_AT_PKS_KETO = 42
     TRANS_AT_PKS_ALPHA_OH = 43
+<<<<<<< HEAD
     TRANS_AT_PKS_NON_ELOGATING_PYR = 44
+=======
+    TRANS_AT_PKS_NON_ELONGATING_PYR = 44
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8
 
     @staticmethod
     def from_string(label: str) -> "KSDomainSubtype":
@@ -205,3 +237,22 @@ class KSDomainSubtype(Enum):
             if str(value.name) == label:
                 return value
         raise ValueError(f"Unknown KS domain subtype: {label}")
+<<<<<<< HEAD
+=======
+
+@unique
+class ERDomainSubtype(Enum):
+    """
+    An Enum representing the subtypes of KS domain supported by RAIChU
+    """
+    S = 1
+    R = 2
+    UNKNOWN = 3
+
+    @staticmethod
+    def from_string(label: str) -> "ERDomainSubtype":
+        for value in ERDomainSubtype:
+            if str(value.name) == label:
+                return value
+        raise ValueError(f"Unknown ER domain subtype: {label}")
+>>>>>>> c6d5909a785655b492aa496bec05f14870a816d8

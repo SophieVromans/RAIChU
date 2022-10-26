@@ -1,11 +1,12 @@
 import matplotlib
 from random import choice
-matplotlib.use('TkAgg')
+from sys import platform
+if platform == 'darwin':
+    matplotlib.use('TkAgg')
 
 from matplotlib.patches import Circle
 from matplotlib.widgets import Button
 import matplotlib.lines as lines
-from class_domain import CarrierDomain
 
 from raichu.drawing.drawer import *
 from raichu.reactions.chain_release import *
@@ -339,7 +340,7 @@ def draw_cluster(pks_cluster, interactive=False, save_fig=False):
     # Delete image files of quick reaction mechanisms
     for module in pks_cluster:
         module_name = module[0]
-        if os.path.exists(f'{module_name}_quick_mechanism.png'):
+        if path.exists(f'{module_name}_quick_mechanism.png'):
             os.remove(f'{module_name}_quick_mechanism.png')
 
 

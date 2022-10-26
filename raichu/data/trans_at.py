@@ -49,53 +49,42 @@ TRANSATOR_CLADE_TO_TAILORING_REACTIONS = {'TRANS_AT_PKS_NON_ELONGATING_DB': [('D
 # TODO: Map all these SMILES to names, make Enums for them
 TRANSATOR_CLADE_TO_STARTER_SUBSTRATE = {'TRANS_AT_PKS_NON_ELONGATING_DB': 'ACETYL_COA',
                                         # TODO: choose SMILES
-                                        'TRANS_AT_PKS_BETA_OH_KETO': 'OC(C(O)=O)C(S)=O OC(=O)C(=O)C(S)=O',
+                                        'TRANS_AT_PKS_BETA_OH_KETO': 'ACETYL_COA',
                                         'TRANS_AT_PKS_NON_ELONGATING_BETA_OH': 'ACETYL_COA',
-                                        'TRANS_AT_PKS_ALPHA_OH': 'DIHYDROXY_PROPANOLYL_COA_33',
-                                        'TRANS_AT_PKS_EDB': "HYDROXY_PROPENOYL_COA_3_23E",
-                                        'TRANS_AT_PKS_ARST': 'HEPTATRIENOYL_COA', 'TRANS_AT_PKS_PYR': 'ACETYL_COA',
-                                        'TRANS_AT_PKS_ALPHAME_EDB': "HYDROXY_BUTENOYL_COA_3_23E",
+                                        'TRANS_AT_PKS_ALPHA_OH': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_EDB': "ACETYL_COA",
+                                        'TRANS_AT_PKS_ARST': 'PHENYLACETYLCOA', 'TRANS_AT_PKS_PYR': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_ALPHAME_EDB': "ACETYL_COA",
                                         'TRANS_AT_PKS_OXI': 'ACETYL_COA', 'TRANS_AT_PKS_AA': 'GLYCINE',
-                                        # TODO: CHECK STEREOCHEMISTRY, check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_ALPHAME_BETA_L_OH': "HYDROXY_MALONYL_COA_2",
-                                        # TODO: CHECK STEREOCHEMISTRY, check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_NON_ELONGATING_BETA_L_OH': "HYDROXY_MALONYL_COA_2R",
+                                        'TRANS_AT_PKS_ALPHAME_BETA_L_OH': "ACETYL_COA",
+                                        'TRANS_AT_PKS_NON_ELONGATING_BETA_L_OH': "ACETYL_COA",
                                         'TRANS_AT_PKS_RED_SHDB': 'ACETYL_COA',
-                                        'TRANS_AT_PKS_DB': "HYDROXY_PROPENOYL_COA_3_23E",
-                                        'TRANS_AT_PKS_KETO': 'OXOMALONYL_COA_2',
+                                        'TRANS_AT_PKS_DB': "ACETYL_COA",
+                                        'TRANS_AT_PKS_KETO': 'ACETYL_COA',
                                         'TRANS_AT_PKS_NON_ELONGATING': 'ACETYL_COA',
-                                        # TODO: CHECK STEREOCHEMISTRY, check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_BETA_D_OH': "HYDROXY_MALONYL_COA_2",
-                                        # TODO: CHECK STEREOCHEMISTRY, check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_BETA_L_OH': "HYDROXY_MALONYL_COA_2R",
+                                        'TRANS_AT_PKS_BETA_D_OH': "ACETYL_COA",
+                                        'TRANS_AT_PKS_BETA_L_OH': "ACETYL_COA",
                                         'TRANS_AT_PKS_BR': 'ACETYL_COA',
-                                        'TRANS_AT_PKS_ALPHABETA_OH': 'TRIHYDROXY_PROPANOLYL_COA_233',
-                                        'TRANS_AT_PKS_UNST': 'ACETYL_COA', 'TRANS_AT_PKS_ST': 'CC(S)=O',
-                                        'TRANS_AT_PKS_MEOST': 'O_METHYLACETYL_COA',
-                                        # TODO: choose SMILES
-                                        'TRANS_AT_PKS_ACST': 'CCC(S)=O CC(S)=O',
-                                        # TODO: choose SMILES
-                                        'TRANS_AT_PKS_ALPHAME': 'CC(O)CC(S)=O CC(O)C(O)C(S)=O CC(O)C(=O)C(S)=O',
-                                        # TODO: check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_BETA_D_OME': "METHOXYMALONYL_ACP",
+                                        'TRANS_AT_PKS_ALPHABETA_OH': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_UNST': 'GLYCERYL_COA', 'TRANS_AT_PKS_ST': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_MEOST': 'METHOXYFORMYL_COA',
+                                        'TRANS_AT_PKS_ACST': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_ALPHAME': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_BETA_D_OME': "MACETYL_COA",
                                         'TRANS_AT_PKS_NON_ELONGATING_PYR': 'ACETYL_COA',
-                                        # TODO: choose SMILES
-                                        'TRANS_AT_PKS_BETA_ME': 'OC(=O)C(=C)C(S)=O CC(C(O)=O)C(S)=O',
-                                        # TODO: choose SMILES
-                                        'TRANS_AT_PKS_BETA_OH_EDB': 'OC(C(O)=O)C(S)=O O\\C=C\\C(S)=O',
-                                        # TODO: choose SMILES
-                                        'TRANS_AT_PKS_NON_ELONGATING_OXA': 'CC1=NC(C)=CO1 CC1=NC(C)=CS8',
-                                        'TRANS_AT_PKS_LACST': 'HYDROXYPROPIONYL_COA_2R',
+                                        'TRANS_AT_PKS_BETA_ME': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_BETA_OH_EDB': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_NON_ELONGATING_OXA': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_LACST': 'LACTYL_COA',
                                         'TRANS_AT_PKS_SHDB': 'ACETYL_COA',
                                         'TRANS_AT_PKS_OUT': 'ACETYL_COA',
-                                        # TODO: check if indeed a malonyl derivative
-                                        'TRANS_AT_PKS_BETA_OH': "METHOXYMALONYL_ACP",
-                                        'TRANS_AT_PKS_ZDB': 'HYDROXY_PROPENOYL_COA_3_23Z',
-                                        'TRANS_AT_PKS_BETA_MEDB': "METHYL_HYDROXY_PROPENOYL_COA_2_3_23Z",
+                                        'TRANS_AT_PKS_BETA_OH': "ACETYL_COA",
+                                        'TRANS_AT_PKS_ZDB': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_BETA_MEDB': "ACETYL_COA",
                                         'TRANS_AT_PKS': 'ACETYL_COA', 'TRANS_AT_PKS_OXA': 'ACETYL_COA',
-                                        'TRANS_AT_PKS_ALPHAME_BETA_D_OH': 'DIHYDROXY_BUTANOLYL_COA_2S3S',
-                                        'TRANS_AT_PKS_ALPHAME_BETAOH': 'DIHYDROXY_BUTANOLYL_COA_23',
-                                        'TRANS_AT_PKS_NON_ELONGATING_ALPHAME_EDB': "HYDROXY_BUTENOYL_COA_3_23E",
+                                        'TRANS_AT_PKS_ALPHAME_BETA_D_OH': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_ALPHAME_BETAOH': 'ACETYL_COA',
+                                        'TRANS_AT_PKS_NON_ELONGATING_ALPHAME_EDB': "ACETYL_COA",
                                         'TRANS_AT_PKS_RED': 'ACETYL_COA'}
 
 TRANSATOR_CLADE_TO_ELONGATING = {'TRANS_AT_PKS_NON_ELONGATING_DB': False,

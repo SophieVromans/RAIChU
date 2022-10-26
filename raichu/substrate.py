@@ -34,7 +34,11 @@ _PKS_TO_SMILES = {"WILDCARD": r"SC(C([*])C(O)=O)=O",
                   "DIHYDROXY_BUTANOLYL_COA_2S3S": r"C[C@H](O)[C@H](O)C(O)S",
                   "HEPTATRIENOYL_COA": r"SC(=O)C1=CC=CC=C3",
                   "HYDROXYPROPIONYL_COA_2R": r"C[C@@H](O)C(S)=O",
-                  "DIHYDROXY_PROPANOLYL_COA_33": r"OC(O)CC(O)S"
+                  "DIHYDROXY_PROPANOLYL_COA_33": r"OC(O)CC(O)S",
+                  "LACTYL_COA": r"C[C@@H](O)C(S)=O",
+                  "PHENYLACETYLCOA": r"SC(=O)CC1=CC=CC=C1",
+                  "METHOXYFORMYL_COA": r"COC(S)=O",
+                  "GLYCERYL_COA": r"OCC(O)C(S)=O"
                   }
 
 

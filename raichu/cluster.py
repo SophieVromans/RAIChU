@@ -32,13 +32,11 @@ class Cluster:
             print(module.tailoring_domains)
 
     def handle_transat(self):
-
         for i, module in enumerate(self.modules):
             if module.type.name == "PKS" and module.subtype.name == "PKS_TRANS":
                 substrate = PKSSubstrate("MALONYL_COA")
                 if i < len(self.modules) - 1:
                     next_module = self.modules[i + 1]
-
                     if next_module.type.name == "PKS":
                         if module.is_starter_module and next_module.subtype.name == "PKS_TRANS":
                             substrate_name = TRANSATOR_CLADE_TO_STARTER_SUBSTRATE.get(next_module.synthesis_domain.subtype.name)
@@ -51,12 +49,15 @@ class Cluster:
                             substrate = PKSSubstrate("ACETYL_COA")
                         elif not module.is_starter_module and not module.is_termination_module and next_module.subtype.name == "PKS_TRANS":
                             # Ignore tailoring domains in the module itself
+                            # Why do we do this if we delete them afterwards anyways?
                             for domain in module.tailoring_domains:
                                 domain.used = False
                             module.tailoring_domains = []
                             for dummy_domain_type, dummy_domain_subtype in TRANSATOR_CLADE_TO_TAILORING_REACTIONS[next_module.synthesis_domain.subtype.name]:
                                 self.modules[i].tailoring_domains.append(TailoringDomain(dummy_domain_type,
                                                                                          dummy_domain_subtype))
+                if TRANSATOR_CLADE_TO_ELONGATING[module.synthesis_domain.subtype.name]==False:
+                    self.modules[i].synthesis_domain.is_elongating==False
                 self.modules[i].recognition_domain.substrate = substrate
 
     def compute_structures(self, compute_cyclic_products=True):
@@ -107,4 +108,3 @@ class Mechanism:
 
     def draw_mechanism(self):
         pass
-

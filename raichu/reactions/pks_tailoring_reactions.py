@@ -245,7 +245,8 @@ def dehydration(chain_intermediate: Structure) -> Structure:
     return chain_intermediate
 
 
-def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -> Structure:
+def enoylreduction(chain_intermediate: Structure,
+                   er_subtype: ERDomainSubtype) -> Structure:
     """
     Performs the enoylreductase reaction on the PKS chain intermediate, returns
     the reaction product as a PIKAChU Structure object
@@ -253,6 +254,7 @@ def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -
     chain_intermediate: PIKAChU Structure object, PKS chain intermediate where
     the beta ketone group has been recently reduced and dehydrated by the KR
     and ER domains, respectively
+    er_subtype: ERDomainSubtype
     """
 
     for atom in chain_intermediate.graph:

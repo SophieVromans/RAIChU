@@ -1,0 +1,8 @@
+bgc_type	gene_name	module_id	module_type	specificity	tailoring_domains
+PKS type I	eryAI	0	starter_module_pks	SC(=O)CC
+PKS type I	eryAI	1	elongation_module_pks	methylmalonylcoa	KR_B2
+PKS type I	eryAI	2	elongation_module_pks	methylmalonylcoa	KR_A1
+PKS type I	eryAII	3	elongation_module_pks	methylmalonylcoa	KR_C2
+PKS type I	eryAII	4	elongation_module_pks	methylmalonylcoa	KR|DH|ER
+PKS type I	eryAIII	5	elongation_module_pks	methylmalonylcoa	KR_A1
+PKS type I	eryAIII	6	terminator_module_pks	methylmalonylcoa	KR_A1

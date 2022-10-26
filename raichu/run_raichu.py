@@ -122,7 +122,10 @@ def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> C
 
     return cluster
 
-
+def draw_cluster(cluster_repr: ClusterRepresentation) -> None:
+    cluster = build_cluster(cluster_repr)
+    cluster.compute_structures(compute_cyclic_products=False)
+    cluster.draw_cluster()
 def get_spaghettis(cluster_repr: ClusterRepresentation) -> List[str]:
 
     cluster = build_cluster(cluster_repr)
@@ -146,10 +149,9 @@ if __name__ == "__main__":
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
-                                          ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
+                                          ModuleRepresentation("PKS", "PKS_CIS", "METHYLMALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'KS',
-                                                                                     "TRANS_AT_PKS_BETA_OH", None, True,
-
+                                                                                     None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),
@@ -161,39 +163,6 @@ if __name__ == "__main__":
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
-                                                                ]),
-                                          ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
-                                                               [DomainRepresentation("gene 1", 'KS',
-                                                                                     "TRANS_AT_PKS_BETA_OH", None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'AT', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'KR', "A1", None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'ER', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
-                                                                                     True)
-                                                                ]),
-                                          ModuleRepresentation("PKS", "PKS_TRANS", "METHYLMALONYL_COA",
-                                                               [DomainRepresentation("gene 1", 'KS', "TRANS_AT_PKS_BETA_OH", None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'AT', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'KR', "B1", None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'ER', "S", None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'UNKNOWN', None, "MyDOM",
-                                                                                     True, False),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
-                                                                                     True),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
-                                                                                     False)
                                                                 ]),
                                           ModuleRepresentation("NRPS", None, "tyrosine",
                                                                [DomainRepresentation("gene 1", 'C', None, None, True,
@@ -211,10 +180,4 @@ if __name__ == "__main__":
                                                                 ]),
                                           ])
 
-    spaghettis = get_spaghettis(cluster_repr)
-    out_folder = "starterpks"
-    if not os.path.exists(out_folder):
-        os.mkdir(out_folder)
-    for i, spaghetti in enumerate(spaghettis):
-        with open(os.path.join(out_folder, f"{i}.svg"), 'w') as out:
-            out.write(spaghetti)
+    draw_cluster(cluster_repr)

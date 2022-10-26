@@ -1,16 +1,7 @@
 
 from raichu.drawing.colours import OUTLINE_COLOURS, FILL_COLOURS, DOMAIN_ABBREVIATIONS
 
-# <g color="green">
-#     <rect width="50" height="50" fill="currentcolor" />
-#     <circle
-#       r="25"
-#       cx="70"
-#       cy="70"
-#       stroke="currentcolor"
-#       fill="none"
-#       stroke-width="5" />
-#   </g>
+
 def make_circle(x_coord, y_coord, domain):
     """Easy function to draw circle for the domain visualization. Returns
     matplotlib.patches.circle object of a circle with radius 4
@@ -29,10 +20,11 @@ def make_circle(x_coord, y_coord, domain):
 
 
 def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
-    current_x = 0.0
+    current_x = 30.0
     font_domains = {'family': 'verdana', 'size': (13)}
     circles = []
     texts = []
+    cp_positions = []
 
     for module in cluster.modules:
         for i, domain in enumerate(module.domains):
@@ -43,9 +35,9 @@ def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
                     abbreviation = ''
 
             if domain.supertype.name == 'UNKNOWN' or domain.supertype.name == 'TAILORING':
-                current_y = -7.0
+                current_y = 23.0
             else:
-                current_y = 0.0
+                current_y = 30.0
 
             circles.append(make_circle(current_x, current_y, domain))
 
@@ -53,28 +45,24 @@ def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
             if not domain.used:
                 opacity = 0.5
 
+            text = f"""<text 
+            x="{current_x}" 
+            y="{current_y}" 
+            opacity="{opacity}" 
+            text-anchor="middle"
+            font-family="verdana"
+            font-size = "{13}">
+            <tspan y="{current_y}" dy="0.35em">{abbreviation}</tspan>
+            </text>"""
 
-            texts.append(f"""<text x="{current_x}" y="{current_y}" opacity="{opacity}" text-anchor="middle" dominant-baseline="central" class="small">{abbreviation}</text>""")
-
+            texts.append(text)
+            if domain.supertype.name == "CARRIER" and domain.used:
+                cp_positions.append((current_x, current_y))
             current_x += delta_x
 
         current_x += min_module_padding
 
-    svg = """<svg viewBox="-20 -20 550 20" xmlns="http://www.w3.org/2000/svg"><style>
-    .small {
-      font: 13px sans-serif;
-    }
-    .heavy {
-      font: bold 30px sans-serif;
-    }
-
-    /* Note that the color of the text is set with the    *
-     * fill property, the color property is for HTML only */
-    .Rrrrr {
-      font: italic 40px serif;
-      fill: red;
-    }
-  </style>"""
+    svg = ''
 
     for i, circle in enumerate(circles):
         text = texts[i]
@@ -83,8 +71,7 @@ def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
         svg += text
         svg += "</g>"
 
-    svg += "</svg>"
-    return svg
+    return svg, cp_positions, current_x
 
 
 

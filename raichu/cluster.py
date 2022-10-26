@@ -10,7 +10,7 @@ from raichu.drawing.bubbles import draw_bubbles
 
 
 from raichu.substrate import PKSSubstrate
-from raichu.data.trans_at import TRANSATOR_CLADE_TO_TAILORING_REACTIONS, TRANSATOR_CLADE_TO_STARTER_SUBSTRATE
+from raichu.data.trans_at import TRANSATOR_CLADE_TO_TAILORING_REACTIONS, TRANSATOR_CLADE_TO_STARTER_SUBSTRATE, TRANSATOR_CLADE_TO_ELONGATING
 from raichu.domain.domain import TailoringDomain
 
 
@@ -94,9 +94,81 @@ class Cluster:
         return spaghetti_svgs + [linear_svg]
 
     def draw_cluster(self):
-        svg = draw_bubbles(self)
+        bubble_svg, bubble_positions, last_domain_coord = draw_bubbles(self)
+        min_x = 100000000
+        max_x = -100000000
+        min_y = 100000000
+        max_y = -100000000
+
+        svg_strings = []
+        squiggly_svgs = []
+        padding = None
+
+        for i, structure in enumerate(self.structure_intermediates):
+
+            drawing = RaichuDrawer(structure, dont_show=True)
+            padding = drawing.options.padding
+            drawing.flip_y_axis()
+            drawing.move_to_positive_coords()
+            drawing.convert_to_int()
+
+            carrier_domain_pos = None
+
+            for atom in drawing.structure.graph:
+                if atom.annotations.domain_type:
+                    carrier_domain_pos = atom.draw.position
+                    atom.draw.positioned = False
+
+            assert carrier_domain_pos
+            bubble_x, bubble_y = bubble_positions[i]
+            x_translation = bubble_x - carrier_domain_pos.x
+            y_translation = bubble_y - carrier_domain_pos.y
+
+            drawing.move_structure(x_translation, y_translation + 15)
+            svg = drawing.draw_svg()
+            svg_strings.append(svg)
+
+            sulphur_pos = None
+            carrier_pos = None
+
+            for atom in drawing.structure.graph:
+                if atom.draw.positioned:
+                    if atom.draw.position.x < min_x:
+                        min_x = atom.draw.position.x
+                    if atom.draw.position.y < min_y:
+                        min_y = atom.draw.position.y
+                    if atom.draw.position.x > max_x:
+                        max_x = atom.draw.position.x
+                    if atom.draw.position.y > max_y:
+                        max_y = atom.draw.position.y
+                if atom.annotations.domain_type:
+                    sulphur_pos = atom.get_neighbour('S').draw.position
+                    carrier_pos = atom.draw.position
+
+            squiggly_svg = f'<path d="M {sulphur_pos.x} {sulphur_pos.y - 5} Q {sulphur_pos.x - 5} {sulphur_pos.y - (sulphur_pos.y - 5 - carrier_pos.y)/2}, {carrier_pos.x} {sulphur_pos.y - 5 - (sulphur_pos.y - 5 - carrier_pos.y)/2} T {carrier_pos.x} {carrier_pos.y}" stroke="grey" fill="white"/>'
+            squiggly_svgs.append(squiggly_svg)
+        assert padding is not None
+
+        x1 = 0
+        x2 = max([max_x + padding, last_domain_coord + padding])
+        y1 = 0
+        y2 = max_y + padding
+
+        width = max_x - min_x + 2 * padding
+        height = max_y
+
+        print(len(svg_strings))
+
+        svg_string = f"""<svg width="{width}" height="{height}" viewBox="{x1} {y1} {x2} {y2}" xmlns="http://www.w3.org/2000/svg">"""
+        svg_string += bubble_svg
+        for string in svg_strings:
+            svg_string += string
+        for squiggly_svg in squiggly_svgs:
+            svg_string += squiggly_svg
+        svg_string += "</svg>"
+
         with open('testy.svg', 'w') as svg_out:
-            svg_out.write(svg)
+            svg_out.write(svg_string)
 
 
 class Mechanism:

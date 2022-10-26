@@ -7,7 +7,7 @@ from raichu.central_chain_detection.find_central_chain import find_central_chain
 
 class RaichuDrawer(Drawer):
     def __init__(self, structure, options=None, save_png=None, dont_show=False,
-                 coords_only=False, dpi=100, save_svg=None):
+                 coords_only=True, dpi=100, save_svg=None):
         self.dont_show = dont_show
         self.dpi = dpi
         if options is None:
@@ -26,7 +26,7 @@ class RaichuDrawer(Drawer):
             # Check if filename is valid
             assert save_svg.endswith('.svg')
             self.save_svg = save_svg
-        super().__init__(structure, options=None, coords_only=False)
+        super().__init__(structure, options=None, coords_only=coords_only)
 
     def center_on_carrier_domain(self):
         pass

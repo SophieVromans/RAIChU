@@ -28,6 +28,256 @@ class RaichuDrawer(Drawer):
             self.save_svg = save_svg
         super().__init__(structure, options=None, coords_only=False)
 
+    def center_on_carrier_domain(self):
+        pass
+
+    def export_to_json(self):
+        json_structure = {"atoms": [],
+                          "bonds": [],
+                          "modules": []}
+
+        ring_centers_x = []
+        ring_centers_y = []
+
+        for ring in self.rings:
+            self.set_ring_center(ring)
+
+            ring_centers_x.append(ring.center.x)
+            ring_centers_y.append(ring.center.y)
+
+        for bond_nr, bond in self.structure.bonds.items():
+            if bond.atom_1.draw.positioned and bond.atom_2.draw.positioned:
+                json_bond = {"id": bond.nr,
+                             "atom_1": bond.atom_1.nr,
+                             "atom_2": bond.atom_2.nr,
+                             "type": bond.type,
+                             "chiral": False,
+                             "lines": []}
+
+                if bond in self.chiral_bonds:
+
+                    orientation, chiral_center = self.chiral_bond_to_orientation[bond]
+                    json_bond["chiral"] = True
+                    json_bond["wedge_orientation"] = orientation
+                    json_bond["wedge_origin"] = chiral_center.nr
+                elif (bond.atom_1.type == 'S' and bond.atom_2.annotations.domain_type or \
+                      (bond.atom_2.type == 'S' and bond.atom_1.annotations.domain_type)):
+                    json_bond["type"] = "squiggle"
+
+
+        # If the starter unit contains an unknown moiety, number this R1
+        for atom in self.structure.graph:
+            if atom.type == '*' and not atom.annotations.unknown_index:
+                atom.annotations.unknown_index = 1
+        for atom in self.structure.graph:
+            if atom.draw.positioned:
+                json_atom = {"id": atom.nr,
+                             "type": atom.type,
+                             "text": '',
+                             "atom_x": atom.draw.position.x,
+                             "atom_y": atom.draw.position.y}
+
+                if atom.type != 'C' and atom.draw.positioned:
+                    text_h = ''
+                    text_h_pos = None
+
+                    if atom.type != 'C' or atom.draw.draw_explicit:
+                        text = atom.type
+                    else:
+                        text = ''
+
+                    if atom.annotations.domain_type:
+                        text = atom.annotations.domain_type
+
+                    horizontal_alignment = 'center'
+
+                    orientation = self.get_hydrogen_text_orientation(atom)
+                    if orientation == 'H_above_atom':
+                        text_h_pos = Vector(atom.draw.position.x, atom.draw.position.y + 6)
+                    if orientation == 'H_below_atom':
+                        text_h_pos = Vector(atom.draw.position.x, atom.draw.position.y - 6)
+
+                    atom_draw_position = Vector(atom.draw.position.x, atom.draw.position.y)
+
+                    if atom.type == '*':
+                        neighbouring_c = atom.get_neighbour('C')
+                        assert neighbouring_c
+                        # In order to not let the number of the sidechain overlap
+                        # with the bond, move Rx symbol along hor. axis depending on
+                        # if group is added to the left or right of the chain
+                        delta_x_r = self.get_delta_x_sidechain(atom, neighbouring_c)
+                        atom_draw_position.x += delta_x_r
+                        text = fr'$R_{atom.annotations.unknown_index}$'
+
+                    if not atom.charge and (atom.type != 'C' or atom.draw.draw_explicit):
+
+                        if atom.draw.has_hydrogen:
+                            hydrogen_count = 0
+                            for neighbour in atom.neighbours:
+                                if neighbour.type == 'H' and not neighbour.draw.is_drawn:
+                                    hydrogen_count += 1
+
+                            if hydrogen_count:
+
+                                if hydrogen_count > 1:
+                                    if orientation == 'H_before_atom':
+                                        text = r'$H_{hydrogens}{atom_type}$'.format(hydrogens=hydrogen_count,
+                                                                                    atom_type=atom.type)
+                                        horizontal_alignment = 'right'
+                                        atom_draw_position.x += 3
+                                    elif orientation == 'H_below_atom' or orientation == 'H_above_atom':
+                                        text = atom.type
+                                        text_h = r'$H_{hydrogens}$'.format(hydrogens=hydrogen_count)
+
+                                    else:
+                                        text = r'${atom_type}H_{hydrogens}$'.format(hydrogens=hydrogen_count,
+                                                                                    atom_type=atom.type)
+                                        horizontal_alignment = 'left'
+                                        atom_draw_position.x -= 3
+                                elif hydrogen_count == 1:
+                                    if orientation == 'H_before_atom':
+                                        text = f'H{atom.type}'
+                                        horizontal_alignment = 'right'
+                                        atom_draw_position.x += 3
+                                    elif orientation == 'H_below_atom' or orientation == 'H_above_atom':
+                                        text = atom.type
+                                        text_h = 'H'
+                                    else:
+                                        text = f'{atom.type}H'
+                                        horizontal_alignment = 'left'
+                                        atom_draw_position.x -= 3
+
+                    elif atom.charge:
+                        if atom.charge > 0:
+                            charge_symbol = '+'
+                        else:
+                            charge_symbol = '-'
+
+                        hydrogen_count = 0
+                        for neighbour in atom.neighbours:
+                            if neighbour.type == 'H' and not neighbour.draw.is_drawn:
+                                hydrogen_count += 1
+
+                        if not hydrogen_count:
+
+                            if abs(atom.charge) > 1:
+
+                                text = r'${atom_type}^{charge}{charge_symbol}$'.format(charge=atom.charge,
+                                                                                       atom_type=atom.type,
+                                                                                       charge_symbol=charge_symbol)
+                            elif abs(atom.charge) == 1:
+                                text = r'${atom_type}^{charge_symbol}$'.format(atom_type=atom.type,
+                                                                               charge_symbol=charge_symbol)
+
+                            horizontal_alignment = 'left'
+                            atom_draw_position.x -= 3
+                        else:
+
+                            if hydrogen_count > 1:
+                                if orientation == 'H_before_atom':
+                                    if abs(atom.charge) > 1:
+                                        text = r'$H_{hydrogens}{atom_type}^{charge}{charge_symbol}$'.format(
+                                            hydrogens=hydrogen_count,
+                                            atom_type=atom.type,
+                                            charge=atom.charge,
+                                            charge_symbol=charge_symbol)
+                                    elif abs(atom.charge) == 1:
+                                        text = r'$H_{hydrogens}{atom_type}^{charge_symbol}$'.format(
+                                            hydrogens=hydrogen_count,
+                                            atom_type=atom.type,
+                                            charge_symbol=charge_symbol)
+
+                                    horizontal_alignment = 'right'
+                                    atom_draw_position.x += 3
+                                elif orientation == 'H_above_atom' or orientation == 'H_below_atom':
+                                    text_h = r'$H_{hydrogens}$'.format(hydrogens=hydrogen_count)
+                                    if abs(atom.charge) > 1:
+                                        text = r'${atom_type}^{charge}{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                               charge=atom.charge,
+                                                                                               charge_symbol=charge_symbol)
+                                    elif abs(atom.charge) == 1:
+                                        text = r'${atom_type}^{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                       charge_symbol=charge_symbol)
+                                else:
+                                    if abs(atom.charge) > 1:
+                                        text = r'${atom_type}H_{hydrogens}^{charge}{charge_symbol}$'.format(
+                                            hydrogens=hydrogen_count,
+                                            atom_type=atom.type,
+                                            charge=atom.charge,
+                                            charge_symbol=charge_symbol)
+                                    elif abs(atom.charge) == 1:
+                                        text = r'${atom_type}H_{hydrogens}^{charge_symbol}$'.format(
+                                            hydrogens=hydrogen_count,
+                                            atom_type=atom.type,
+                                            charge_symbol=charge_symbol)
+
+                                    horizontal_alignment = 'left'
+                                    atom_draw_position.x -= 3
+                            elif hydrogen_count == 1:
+                                if orientation == 'H_before_atom':
+                                    if abs(atom.charge) > 1:
+
+                                        text = r'$H{atom_type}^{charge}{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                                charge=atom.charge,
+                                                                                                charge_symbol=charge_symbol)
+                                    elif abs(atom.charge) == 1:
+                                        text = r'$H{atom_type}^{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                        charge_symbol=charge_symbol)
+                                    horizontal_alignment = 'right'
+                                    atom_draw_position.x += 3
+                                elif orientation == 'H_above_atom' or orientation == 'H_below_atom':
+                                    text_h = 'H'
+                                    if abs(atom.charge) > 1:
+
+                                        text = r'${atom_type}^{charge}{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                               charge=atom.charge,
+                                                                                               charge_symbol=charge_symbol)
+                                    elif abs(atom.charge) == 1:
+                                        text = r'${atom_type}^{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                       charge_symbol=charge_symbol)
+
+                                else:
+                                    if abs(atom.charge) > 1:
+                                        text = r'${atom_type}H^{charge}{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                                charge=atom.charge,
+                                                                                                charge_symbol=charge_symbol)
+
+                                    elif abs(atom.charge) == 1:
+                                        text = r'${atom_type}H^{charge_symbol}$'.format(atom_type=atom.type,
+                                                                                        charge_symbol=charge_symbol)
+                                    horizontal_alignment = 'left'
+                                    atom_draw_position.x -= 3
+
+                    if text:
+                        plt.text(atom_draw_position.x, atom_draw_position.y,
+                                 text,
+                                 horizontalalignment=horizontal_alignment,
+                                 verticalalignment='center',
+                                 color=atom.draw.colour)
+                    if text_h:
+                        plt.text(text_h_pos.x, text_h_pos.y,
+                                 text_h,
+                                 horizontalalignment='center',
+                                 verticalalignment='center',
+                                 color=atom.draw.colour)
+
+        # If a png filename is included in the initialization of the
+        # Raichu_drawer object, don't show the structure, but do save it as a
+        # png image to the provided filename
+        if self.dont_show:
+            return self
+
+        elif self.save_png is None and not self.dont_show and self.save_svg is None:
+            plt.show()
+
+        else:
+            if self.save_png:
+                plt.savefig(self.save_png)
+            elif self.save_svg:
+                plt.savefig(self.save_svg)
+            plt.clf()
+            plt.close()
+
     def finetune_overlap_resolution(self, masked_bonds=None, highest_atom=None):
 
         if not masked_bonds:
@@ -134,7 +384,7 @@ class RaichuDrawer(Drawer):
         self.line_width = 2
 
         fig, ax = plt.subplots(figsize=((width + 2 * self.options.padding) /
-        50.0,(height + 2 * self.options.padding) / 50.0), dpi=self.dpi)
+        50.0, (height + 2 * self.options.padding) / 50.0), dpi=self.dpi)
 
         ax.set_aspect('equal', adjustable='box')
         ax.axis('off')
@@ -511,6 +761,7 @@ class RaichuDrawer(Drawer):
                 plt.savefig(self.save_svg)
             plt.clf()
             plt.close()
+
 
     def process_structure(self):
         self.position()

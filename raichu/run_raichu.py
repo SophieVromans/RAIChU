@@ -118,9 +118,6 @@ def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> C
 
     cluster = Cluster(modules)
 
-    # print ("cluster_before",cluster)
-    # cluster_with_processed_trans_at_pks = cluster.handle_transat()
-    # print ("cluster_after",cluster_with_processed_trans_at_pks)
     # return cluster_with_processed_trans_at_pks
 
     return cluster
@@ -129,8 +126,8 @@ def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> C
 def get_spaghettis(cluster_repr: ClusterRepresentation) -> List[str]:
 
     cluster = build_cluster(cluster_repr)
-    for module in cluster.modules:
-        print(module.domains)
+    # for module in cluster.modules:
+    #     print(module.domains)
     cluster.compute_structures(compute_cyclic_products=False)
     cluster.draw_cluster()
     spaghettis = cluster.draw_spaghettis()

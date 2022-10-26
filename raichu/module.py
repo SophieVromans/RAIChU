@@ -246,6 +246,9 @@ class TransATPKSModule(_Module):
         if not self.recognition_domain:
             self.recognition_domain = RecognitionDomain("DUMMY_AT", substrate_name)
 
+    def do_pks_tailoring(self, structure):
+        pass
+
     def run_module(self, structure=None):
         self.do_pks_tailoring(structure)
         raise NotImplementedError

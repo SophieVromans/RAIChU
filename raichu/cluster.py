@@ -23,7 +23,13 @@ class Cluster:
         self.linear_product = None
         self.cyclised_products = []
         self.module_mechanisms = []
+        print("cluster_before")
+        for module in self.modules:
+            print(module.tailoring_domains)
         self.handle_transat()
+        print("cluster_after")
+        for module in self.modules:
+            print(module.tailoring_domains)
 
     def handle_transat(self):
 

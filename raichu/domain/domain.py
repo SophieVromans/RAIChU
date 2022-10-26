@@ -49,16 +49,16 @@ class TailoringDomain(Domain):
         superclass = DomainSuperClass.from_string("TAILORING")
         domain_type = TailoringDomainType.from_string(domain_type)
         if domain_subtype is not None:
-            if 'KR'  in domain_type.name:
+            if domain_type.name == 'KR' or domain_type.name == 'DUMMY_KR':
                 domain_subtype = KRDomainSubtype.from_string(domain_subtype)
-            elif domain_type.name == 'ER':
+            elif domain_type.name == 'ER' or domain_type.name == 'DUMMY_ER':
                 domain_subtype = ERDomainSubtype.from_string(domain_subtype)
             else:
                 raise ValueError(f"RAIChU does not support domain subtypes for {domain_type.name}")
         else:
             if domain_type.name == 'KR' or domain_type.name == 'DUMMY_KR':
                 domain_subtype = KRDomainSubtype.from_string("UNKNOWN")
-            elif domain_type.name == 'ER':
+            elif domain_type.name == 'ER' or domain_type.name == 'DUMMY_ER':
                 domain_subtype = ERDomainSubtype.from_string("UNKNOWN")
 
         super().__init__(superclass, domain_type, domain_subtype, domain_name, active=active, used=used)
@@ -67,11 +67,11 @@ class TailoringDomain(Domain):
         """
         Performs tailoring reaction
         """
-        if self.type.name == 'KR':
+        if self.type.name == 'KR' or self.type.name == 'DUMMY_KR':
             return ketoreduction(structure, self.subtype)
-        elif self.type.name == 'DH':
+        elif self.type.name == 'DH' or self.type.name == 'DUMMY_DH':
             return dehydration(structure)
-        elif self.type.name == 'ER':
+        elif self.type.name == 'ER' or self.type.name == 'DUMMY_ER':
             return enoylreduction(structure, self.subtype)
         elif self.type.name == 'E':
             return epimerize(structure)

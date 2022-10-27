@@ -18,6 +18,7 @@ def epimerize(nrp):
     """
 
     """
+    did_reaction = False
     # Define epimerization reaction target
     chiral_c_ep_atoms = []
     for atom in nrp.graph:
@@ -34,8 +35,10 @@ def epimerize(nrp):
     if len(chiral_c_ep_atoms) == 1:
         chiral_c = chiral_c_ep_atoms[0]
         epimerization(chiral_c)
+        if chiral_c.chiral:
+            did_reaction = True
 
-    return nrp
+    return nrp, did_reaction
 
 
 def methylation(target_atom, structure):
@@ -105,7 +108,7 @@ def n_methylate(nrp):
 
     assert product
 
-    return product
+    return product, True
 
 
 if __name__ == "__main__":

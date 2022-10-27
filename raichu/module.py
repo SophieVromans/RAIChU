@@ -152,6 +152,8 @@ module. Remove a domain or set the 'used' or 'active' flag to False")
                 if isinstance(domain, TerminationDomain):
                     if not self.termination_domain:
                         self.termination_domain = domain
+                        if not self.is_termination_module:
+                            self.termination_domain.used = False
                     else:
                         raise ValueError("Cannot have more than one used termination domain in one \
 module. Remove a domain or set the 'used' or 'active' flag to False")
@@ -182,12 +184,32 @@ module. Remove a domain or set the 'used' or 'active' flag to False")
 
         if kr_domain and kr_domain.active and kr_domain.used:
             assert kr_domain.subtype is not None
-            structure = kr_domain.do_tailoring(structure)
-            if not kr_domain.subtype.name == 'C1' and not kr_domain.subtype.name == 'C2':
-                if dh_domain and dh_domain.active and dh_domain.used:
-                    structure = dh_domain.do_tailoring(structure)
-                    if er_domain and er_domain.active and er_domain.used:
-                        structure = er_domain.do_tailoring(structure)
+            structure, kr_tailored = kr_domain.do_tailoring(structure)
+            if kr_tailored:
+                if not kr_domain.subtype.name == 'C1' and not kr_domain.subtype.name == 'C2':
+                    if dh_domain and dh_domain.active and dh_domain.used:
+                        structure, dh_tailored = dh_domain.do_tailoring(structure)
+                        if dh_tailored:
+                            if er_domain and er_domain.active and er_domain.used:
+                                structure, er_tailored = er_domain.do_tailoring(structure)
+                                if not er_tailored:
+                                    er_domain.used = False
+
+                        else:
+                            dh_domain.used = False
+                            if er_domain:
+                                er_domain.used = False
+            else:
+                kr_domain.used = False
+                if dh_domain:
+                    dh_domain.used = False
+                if er_domain:
+                    er_domain.used = False
+        else:
+            if dh_domain:
+                dh_domain.used = False
+            if er_domain:
+                er_domain.used = False
 
         return structure
 
@@ -196,9 +218,13 @@ module. Remove a domain or set the 'used' or 'active' flag to False")
         n_mt_domain = self.get_tailoring_domain('nMT')
 
         if e_domain and e_domain.active and e_domain.used:
-            structure = e_domain.do_tailoring(structure)
+            structure, epimerized = e_domain.do_tailoring(structure)
+            if not epimerized:
+                e_domain.used = False
         if n_mt_domain and n_mt_domain.active and e_domain.used:
-            structure = n_mt_domain.do_tailoring(structure)
+            structure, methylated = n_mt_domain.do_tailoring(structure)
+            if not methylated:
+                n_mt_domain.used = False
 
         return structure
 

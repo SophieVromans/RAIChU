@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 from pikachu.chem.structure import Structure
 from pikachu.general import read_smiles
 from raichu.substrate import NRPSSubstrate, PKSSubstrate
@@ -63,7 +63,7 @@ class TailoringDomain(Domain):
 
         super().__init__(superclass, domain_type, domain_subtype, domain_name, active=active, used=used)
 
-    def do_tailoring(self, structure) -> Structure:
+    def do_tailoring(self, structure) -> Tuple[Structure, bool]:
         """
         Performs tailoring reaction
         """

@@ -1,5 +1,6 @@
 
-from raichu.drawing.colours import OUTLINE_COLOURS, FILL_COLOURS, DOMAIN_ABBREVIATIONS
+from raichu.drawing.colours import OUTLINE_COLOURS, FILL_COLOURS, DOMAIN_ABBREVIATIONS, TRANSPARENT_OUTLINE_COLOURS, \
+    TRANSPARENT_FILL_COLOURS, TRANSPARENT_TEXT_COLOURS, TEXT_COLOUR
 
 
 def make_circle(x_coord, y_coord, domain):
@@ -10,24 +11,89 @@ def make_circle(x_coord, y_coord, domain):
     domain_type: str, PKS domain type (ACP, KS, AT, KR, DH or ER)
     """
     if domain.used:
-        alpha = 1.0
+        colour = FILL_COLOURS[domain.type.name]
+        outline_colour = OUTLINE_COLOURS[domain.type.name]
     else:
-        alpha = 0.5
+        colour = TRANSPARENT_FILL_COLOURS[domain.type.name]
+        outline_colour = TRANSPARENT_OUTLINE_COLOURS[domain.type.name]
 
-    circle = f"""<circle r="14" cx="{int(x_coord)}" cy="{int(y_coord)}" stroke="{OUTLINE_COLOURS[domain.type.name]}"
-       fill="{FILL_COLOURS[domain.type.name]}" stroke-width="1" opacity="{alpha}"/>"""
+    circle = f"""<circle r="14" cx="{int(x_coord)}" cy="{int(y_coord)}" stroke="{outline_colour}"
+       fill="{colour}" stroke-width="1"/>"""
     return circle
 
 
-def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
-    current_x = 30.0
-    font_domains = {'family': 'verdana', 'size': (13)}
+def draw_bubbles(cluster, widths, delta_x=29, min_module_padding=10):
+    x = 30.0
+    x_bubbles = 30.0
+
+    cp_positions = []
+    cp_positions_bubbles = []
+    previous_space_right = 0.0
+    previous_cp_position = 0.0
+
+    for i, module in enumerate(cluster.modules):
+        current_y = 30.0
+        for j, domain in enumerate(module.domains):
+
+            if domain.supertype.name == 'UNKNOWN' or domain.supertype.name == 'TAILORING':
+                if current_y == 23.0:
+                    level_change = False
+                else:
+                    level_change = True
+
+                current_y = 23.0
+            else:
+                if current_y == 30.0:
+                    level_change = False
+                else:
+                    level_change = True
+                current_y = 30.0
+
+            if level_change and j != 0:
+                x_bubbles -= 1
+                x -= 1
+
+
+            if domain.supertype.name == "CARRIER" and domain.used:
+                cp_positions_bubbles.append(x_bubbles)
+
+                current_space_left, current_space_right = widths[i]
+
+                minimum_x = previous_cp_position + current_space_left + previous_space_right
+
+                x = max([minimum_x, x])
+                cp_positions.append(x)
+                previous_space_right = current_space_right
+                previous_cp_position = x
+
+            x_bubbles += delta_x
+            x += delta_x
+
+        x += min_module_padding
+        x_bubbles += min_module_padding
+
+    module_shifts = []
+
+    for i, cp_position in enumerate(cp_positions):
+        module_shift = cp_positions[i] - cp_positions_bubbles[i]
+        for shift in module_shifts:
+            module_shift -= shift
+        module_shifts.append(module_shift)
+
+    if module_shifts:
+
+        current_x = 30.0 + module_shifts[0]
+
+    else:
+        current_x = 30.0
+
     circles = []
     texts = []
     cp_positions = []
 
-    for module in cluster.modules:
-        for i, domain in enumerate(module.domains):
+    for i, module in enumerate(cluster.modules):
+        current_y = 30.0
+        for j, domain in enumerate(module.domains):
             abbreviation = DOMAIN_ABBREVIATIONS.get(domain.type.name)
             if abbreviation is None:
                 abbreviation = DOMAIN_ABBREVIATIONS.get(domain.domain_name)
@@ -35,20 +101,32 @@ def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
                     abbreviation = ''
 
             if domain.supertype.name == 'UNKNOWN' or domain.supertype.name == 'TAILORING':
+                if current_y == 23.0:
+                    level_change = False
+                else:
+                    level_change = True
+
                 current_y = 23.0
             else:
+                if current_y == 30.0:
+                    level_change = False
+                else:
+                    level_change = True
                 current_y = 30.0
+
+            if level_change and j != 0:
+                current_x -= 1
 
             circles.append(make_circle(current_x, current_y, domain))
 
-            opacity = 1.0
+            text_colour = TEXT_COLOUR
             if not domain.used:
-                opacity = 0.5
+                text_colour = TRANSPARENT_TEXT_COLOURS[domain.type.name]
 
             text = f"""<text 
             x="{current_x}" 
-            y="{current_y}" 
-            opacity="{opacity}" 
+            y="{current_y}"
+            fill="{text_colour}"
             text-anchor="middle"
             font-family="verdana"
             font-size = "{13}">
@@ -60,7 +138,11 @@ def draw_bubbles(cluster, delta_x=28, min_module_padding=10):
                 cp_positions.append((current_x, current_y))
             current_x += delta_x
 
-        current_x += min_module_padding
+        module_shift = 0.0
+        if i != len(cluster.modules) - 1:
+            module_shift = module_shifts[i + 1]
+
+        current_x += (min_module_padding + module_shift)
 
     svg = ''
 

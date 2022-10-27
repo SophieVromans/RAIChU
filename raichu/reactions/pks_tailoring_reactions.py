@@ -1,15 +1,14 @@
-from typing import Tuple
-
-from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner, find_atoms, find_bonds
+from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner, find_atoms, find_bonds, combine_structures
 from pikachu.reactions.basic_reactions import condensation, hydrolysis, internal_condensation
 from pikachu.chem.chirality import same_chirality
 from pikachu.chem.structure import Structure
 from raichu.domain.domain_types import KRDomainSubtype, ERDomainSubtype
 from raichu.reactions.general import initialise_atom_attributes
 from pikachu.general import read_smiles
-
+from raichu.data.attributes import ATTRIBUTES
 
 RECENT_ELONGATION = BondDefiner('recent_elongation', 'O=C(C)CC(=O)S', 0, 1)
+RECENT_ELONGATION_CC = BondDefiner('recent_elongation_CC', 'O=C(C)CC(=O)S', 1, 2)
 RECENT_REDUCTION_COH = BondDefiner('recent_reduction_C-OH', 'OC(C)CC(=O)S', 0, 1)
 RECENT_REDUCTION_MMAL_CHIRAL_C = GroupDefiner('recent_reduction_mmal_chiral_c', 'CCC(C(=O)S)C', 2)
 RECENT_REDUCTION_C = GroupDefiner('recent_reduction_mal', 'OCCC(=O)S', 2)
@@ -17,6 +16,7 @@ RECENT_REDUCTION_CC = BondDefiner('recent_reduction_C-C', 'OCCC(=O)S', 1, 2)
 RECENT_REDUCTION_CC_SHIFTED = BondDefiner('recent_reduction_C-C_shifted', 'CC(O)CC(S)=O', 0, 1)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
 RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
+RECENT_EONYL_REDUCTION_CC=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,1)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
 ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
 ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
@@ -26,6 +26,7 @@ HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED=BondDefiner("
 HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED=BondDefiner("hydroxyl_group_two_module_upstream_beta_with_double_bond_shifted","OC\C=C\CCCC(S)=O",0,1)
 HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA=BondDefiner("hydroxyl_group_two_module_upstream_alpha","OCCCCCC(S)=O",0,1)
 HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA=BondDefiner("hydroxyl_group_two_module_upstream_beta","OCCCCCCC(S)=O",0,1)
+
 
 #STILL MISSING: E/Z-configured double bonds, E/Z-Gamma-beta-dehydrogenase
 
@@ -396,41 +397,41 @@ def find_alpha_c(structure):
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_REDUCTION_CC.atom_2]
+            atom_2 = match.atoms[RECENT_REDUCTION_CC.atom_1]
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_DEHYDRATION.atom_2]
+            atom_2 = match.atoms[RECENT_DEHYDRATION.atom_1]
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_EONYL_REDUCTION.atom_2]
+            atom_2 = match.atoms[RECENT_EONYL_REDUCTION.atom_1]
     else:
                     for match in locations:
-                        atom_1 = match.atoms[RECENT_ELONGATION.atom_2]
-    return atom_1
+                        atom_2 = match.atoms[RECENT_ELONGATION.atom_1]
+    return atom_2
 def find_beta_c(structure):
     """
     Returns the atom that is the current beta c atom
     structure: PIKAChU Structure object
     """
-    locations = structure.find_substructures(RECENT_ELONGATION.structure)
+    locations = structure.find_substructures(RECENT_ELONGATION_CC.structure)
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_REDUCTION_CC.atom_1]
+            atom_2 = match.atoms[RECENT_REDUCTION_CC.atom_2]
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_DEHYDRATION.atom_1]
+            atom_2 = match.atoms[RECENT_DEHYDRATION.atom_2]
     if len(locations)==0:
         locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
         for match in locations:
-            atom_1 = match.atoms[RECENT_EONYL_REDUCTION.atom_1]
+            atom_2 = match.atoms[RECENT_EONYL_REDUCTION_CC.atom_2]
     else:
                     for match in locations:
-                        atom_1 = match.atoms[RECENT_ELONGATION.atom_1]
-    return atom_1
+                        atom_2 = match.atoms[RECENT_EONYL_REDUCTION_CC.atom_2]
+    return atom_2
 def find_beta_c_oh(structure):
     """
     Returns the O atom that is on the current beta c atom
@@ -539,6 +540,7 @@ def alpha_methyl_transferase(structure):
     """
     #find atom to add methylgroup
     alpha_c=find_alpha_c(structure)
+    print(alpha_c)
     structure=methylation(alpha_c,structure)
     return structure
 

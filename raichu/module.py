@@ -8,6 +8,7 @@ from raichu.domain.domain import Domain, TailoringDomain, RecognitionDomain, \
 from raichu.central_chain_detection.label_central_chain import label_pk_central_chain, label_nrp_central_chain
 from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
+from raichu.drawing.drawer import RaichuDrawer
 
 
 @unique
@@ -252,7 +253,7 @@ class LinearPKSModule(_Module):
             structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
 
         structure = self.do_pks_tailoring(structure)
-
+        RaichuDrawer(structure).draw_structure()
         return structure
 
 
@@ -306,6 +307,7 @@ class TransATPKSModule(_Module):
 
         if kr_domain and kr_domain.active and kr_domain.used:
             assert kr_domain.subtype is not None
+
             structure = kr_domain.do_tailoring(structure)
             if not kr_domain.subtype.name == 'C1' and not kr_domain.subtype.name == 'C2':
                 if omt_domain and omt_domain.active and omt_domain.used:
@@ -315,9 +317,10 @@ class TransATPKSModule(_Module):
                     if er_domain and er_domain.active and er_domain.used:
                         structure = er_domain.do_tailoring(structure)
                         if bmt_domain and bmt_domain.active and bmt_domain.used:
-                                    structure = omt_domain.do_tailoring(structure)
+                                    structure = bmt_domain.do_tailoring(structure)
                 elif gdh_domain and gdh_domain.active and gdh_domain.used:
                     structure = gdh_domain.do_tailoring(structure)
+                RaichuDrawer(structure).draw_structure()
         if amt_domain and amt_domain.active and amt_domain.used:
             structure = amt_domain.do_tailoring(structure)
         if almt_domain and almt_domain.active and almt_domain.used:
@@ -336,9 +339,8 @@ class TransATPKSModule(_Module):
             structure = attach_to_domain_pk(starter_unit)
         else:
             structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
-
         structure = self.do_pks_tailoring(structure)
-
+        RaichuDrawer(structure).draw_structure()
         return structure
 
 

@@ -42,7 +42,7 @@ class Cluster:
                                 # TODO: Transfer names of substrates to a dictionary in raichu.substrate
                         elif module.is_starter_module:
                             substrate = PKSSubstrate("ACETYL_COA")
-                        elif not module.is_starter_module and not module.is_termination_module and next_module.subtype.name == "PKS_TRANS":
+                        if not module.is_termination_module and next_module.subtype.name == "PKS_TRANS":
                             # Ignore tailoring domains in the module itself
                             # Why do we do this if we delete them afterwards anyways?
                             for domain in module.tailoring_domains:

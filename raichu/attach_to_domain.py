@@ -122,4 +122,3 @@ def attach_to_domain_nrp(nrp):
     initialise_atom_attributes(structure)
 
     return structure
-

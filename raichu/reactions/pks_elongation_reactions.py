@@ -22,13 +22,11 @@ def pks_elongation(chain_intermediate, elongation_monomer):
     h_to_remove_2 = None
 
     for atom in elongation_monomer.c_to_pk_intermediate.neighbours:
-        print(atom)
         if atom.type == 'H':
             h_to_remove_1 = atom
             break
 
     for atom in elongation_monomer.c_to_s.neighbours:
-        print(atom)
         if atom.type == 'H':
             h_to_remove_2 = atom
             break

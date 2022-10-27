@@ -1,6 +1,6 @@
 import os
 
-from pikachu.general import read_smiles, draw_structure
+from pikachu.general import read_smiles
 from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner
 from raichu.reactions.general import initialise_atom_attributes
 

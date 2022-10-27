@@ -1,5 +1,4 @@
 from typing import List, Union
-import os
 
 from raichu.cluster import Cluster
 from raichu.domain.domain import TailoringDomain, CarrierDomain, SynthesisDomain, RecognitionDomain, \
@@ -70,7 +69,10 @@ def make_domain(domain_repr: DomainRepresentation, substrate: str, strict: bool 
 
 def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> Cluster:
 
+    genes = set()
+
     modules = []
+    previous_domain = None
     for i, module_repr in enumerate(cluster_repr.modules):
         if i == 0:
             starter = True
@@ -86,9 +88,17 @@ def build_cluster(cluster_repr: ClusterRepresentation, strict: bool = True) -> C
         for domain_repr in module_repr.domains:
             domain = make_domain(domain_repr, module_repr.substrate,
                                  strict=strict)
+
             if domain_repr.gene_name is not None:
+                if previous_domain:
+                    previous_gene = previous_domain.gene
+                    if previous_gene != domain_repr.gene_name and domain_repr.gene_name in genes:
+                        raise ValueError(f"Gene name '{previous_gene}' already assigned to upstream domain(s).")
+
                 domain.set_gene(domain_repr.gene_name)
+                genes.add(domain_repr.gene_name)
             domains.append(domain)
+            previous_domain = domain
 
         module_type = ModuleType.from_string(module_repr.type)
         if module_type.name == 'PKS':
@@ -184,60 +194,60 @@ if __name__ == "__main__":
                                           ModuleRepresentation("PKS", "PKS_CIS", "METHYLMALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'KR', 'A1', None, True,
+                                                                DomainRepresentation("gene 2", 'KR', 'A1', None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                DomainRepresentation("gene 2", 'DH', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
+                                                                DomainRepresentation("gene 2", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_CIS", "METHYLMALONYL_COA",
-                                                               [DomainRepresentation("gene 1", 'AT', None, None, True,
+                                                               [DomainRepresentation("gene 2", 'AT', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'KR', 'A1', None, True,
+                                                                DomainRepresentation("gene 3", 'KR', 'A1', None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                DomainRepresentation("gene 3", 'DH', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
+                                                                DomainRepresentation("gene 3", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("NRPS", None, "tryptophan",
-                                                               [DomainRepresentation("gene 1", 'C', None, None, True,
+                                                               [DomainRepresentation("gene 4", 'C', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'C', None, None, True,
+                                                                DomainRepresentation("gene 4", 'C', None, None, True,
                                                                                      False),
-                                                                DomainRepresentation("gene 1", 'A', None, None, True,
+                                                                DomainRepresentation("gene 4", 'A', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'A', None, None, True,
+                                                                DomainRepresentation("gene 4", 'A', None, None, True,
                                                                                      False),
-                                                                DomainRepresentation("gene 1", 'PCP', None, None, True,
+                                                                DomainRepresentation("gene 4", 'PCP', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'PCP', None, None, True,
+                                                                DomainRepresentation("gene 4", 'PCP', None, None, True,
                                                                                      False)
                                                                 ]),
                                           ModuleRepresentation("NRPS", None, "lysine",
-                                                               [DomainRepresentation("gene 1", 'C', None, None, True,
+                                                               [DomainRepresentation("gene 5", 'C', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'A', None, None, True,
+                                                                DomainRepresentation("gene 5", 'A', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'PCP', None, None, True,
+                                                                DomainRepresentation("gene 6", 'PCP', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'TE', None, None, True,
+                                                                DomainRepresentation("gene 7", 'TE', None, None, True,
                                                                                      True)
                                                                 ]),
                                           ModuleRepresentation("NRPS", None, "lysine",
-                                                               [DomainRepresentation("gene 1", 'C', None, None, True,
+                                                               [DomainRepresentation("gene 7", 'C', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'A', None, None, True,
+                                                                DomainRepresentation("gene 7", 'A', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'UNKNOWN', None, 'oMT',
+                                                                DomainRepresentation("gene 7", 'UNKNOWN', None, 'oMT',
                                                                                      True, True),
-                                                                DomainRepresentation("gene 1", 'UNKNOWN', None, 'lalala',
+                                                                DomainRepresentation("gene 7", 'UNKNOWN', None, 'lalala',
                                                                                      True, True),
 
-                                                                DomainRepresentation("gene 1", 'PCP', None, None, True,
+                                                                DomainRepresentation("gene 7", 'PCP', None, None, True,
                                                                                      True),
-                                                                DomainRepresentation("gene 1", 'TE', None, None, True,
+                                                                DomainRepresentation("gene 7", 'TE', None, None, True,
                                                                                      True)
                                                                 ])
                                           ])

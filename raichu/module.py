@@ -272,12 +272,75 @@ class TransATPKSModule(_Module):
         if not self.recognition_domain:
             self.recognition_domain = RecognitionDomain("DUMMY_AT", substrate_name)
 
-    def do_pks_tailoring(self, structure):
-        pass
+    def do_pks_tailoring(self, structure: Structure) -> Structure:
+        kr_domain = self.get_tailoring_domain("KR")
+        if not kr_domain:
+            kr_domain = self.get_tailoring_domain("DUMMY_KR")
+        dh_domain = self.get_tailoring_domain("DH")
+        if not dh_domain:
+            dh_domain = self.get_tailoring_domain("DUMMY_DH")
+        er_domain = self.get_tailoring_domain("ER")
+        if not er_domain:
+            er_domain = self.get_tailoring_domain("DUMMY_ER")
+        almt_domain = self.get_tailoring_domain("ALMT")
+        if not almt_domain:
+            almt_domain = self.get_tailoring_domain("DUMMY_ALMT")
+        amt_domain = self.get_tailoring_domain("AMT")
+        if not amt_domain:
+            amt_domain = self.get_tailoring_domain("DUMMY_AMT")
+        sc_domain = self.get_tailoring_domain("SC")
+        if not sc_domain:
+            sc_domain = self.get_tailoring_domain("DUMMY_SC")
+        ah_domain = self.get_tailoring_domain("AH")
+        if not ah_domain:
+            ah_domain = self.get_tailoring_domain("DUMMY_AH")
+        gdh_domain = self.get_tailoring_domain("GDH")
+        if not gdh_domain:
+            gdh_domain = self.get_tailoring_domain("DUMMY_GDH")
+        omt_domain = self.get_tailoring_domain("OMT")
+        if not omt_domain:
+            omt_domain = self.get_tailoring_domain("DUMMY_OMT")
+        bmt_domain = self.get_tailoring_domain("BMT")
+        if not bmt_domain:
+            bmt_domain = self.get_tailoring_domain("DUMMY_BMT")
 
-    def run_module(self, structure=None):
-        self.do_pks_tailoring(structure)
-        raise NotImplementedError
+        if kr_domain and kr_domain.active and kr_domain.used:
+            assert kr_domain.subtype is not None
+            structure = kr_domain.do_tailoring(structure)
+            if not kr_domain.subtype.name == 'C1' and not kr_domain.subtype.name == 'C2':
+                if omt_domain and omt_domain.active and omt_domain.used:
+                    structure = omt_domain.do_tailoring(structure)
+                elif dh_domain and dh_domain.active and dh_domain.used:
+                    structure = dh_domain.do_tailoring(structure)
+                    if er_domain and er_domain.active and er_domain.used:
+                        structure = er_domain.do_tailoring(structure)
+                        if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                    structure = omt_domain.do_tailoring(structure)
+                elif gdh_domain and gdh_domain.active and gdh_domain.used:
+                    structure = gdh_domain.do_tailoring(structure)
+        if amt_domain and amt_domain.active and amt_domain.used:
+            structure = amt_domain.do_tailoring(structure)
+        if almt_domain and almt_domain.active and almt_domain.used:
+                    structure = almt_domain.do_tailoring(structure)
+        if sc_domain and sc_domain.active and sc_domain.used:
+                    structure = sc_domain.do_tailoring(structure)
+        if ah_domain and ah_domain.active and ah_domain.used:
+                    structure = ah_domain.do_tailoring(structure)
+        return structure
+
+    def run_module(self, structure: Union[Structure, None] = None) -> Structure:
+        if structure is None:
+            assert self.is_starter_module
+            starter_unit = read_smiles(self.recognition_domain.substrate.smiles)
+            label_pk_central_chain(starter_unit)
+            structure = attach_to_domain_pk(starter_unit)
+        else:
+            structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
+
+        structure = self.do_pks_tailoring(structure)
+
+        return structure
+
 
 
 class NRPSModule(_Module):

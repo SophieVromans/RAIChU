@@ -1,5 +1,5 @@
 from paras.features import get_smiles
-from raichu.data.molecular_moieties import NAME_TO_ELONGATION_MONOMER
+from raichu.data.molecular_moieties import make_elongation_monomer
 from enum import Enum, unique
 
 _PKS_TO_SMILES = {"WILDCARD": r"SC(C([*])C(O)=O)=O",
@@ -132,7 +132,7 @@ class PKSSubstrate(Substrate):
             raise ValueError(f"Cannot fetch SMILES string for PKS substrate {name}.")
         super().__init__(name, smiles)
         if name in [v.name for v in PksElongationSubstrate]:
-            self.elongation_monomer = NAME_TO_ELONGATION_MONOMER[self.name]
+            self.elongation_monomer = make_elongation_monomer(self.name)
         elif name in [v.name for v in PksStarterSubstrate]:
             self.elongation_monomer = None
         else:

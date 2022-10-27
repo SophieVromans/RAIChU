@@ -1,4 +1,5 @@
 from pikachu.reactions.functional_groups import combine_structures
+from pikachu.general import draw_structure
 from raichu.data.molecular_moieties import THIOESTERBOND
 from raichu.reactions.general import label_rest_groups
 
@@ -17,19 +18,17 @@ def pks_elongation(chain_intermediate, elongation_monomer):
     # central chain atoms in the starter unit
     assert any(atom.annotations.in_central_chain for atom in chain_intermediate.graph)
 
-    # Reset atom colours to black
-    for atom in chain_intermediate.graph:
-        atom.draw.colour = 'black'
-
     h_to_remove_1 = None
     h_to_remove_2 = None
 
     for atom in elongation_monomer.c_to_pk_intermediate.neighbours:
+        print(atom)
         if atom.type == 'H':
             h_to_remove_1 = atom
             break
 
     for atom in elongation_monomer.c_to_s.neighbours:
+        print(atom)
         if atom.type == 'H':
             h_to_remove_2 = atom
             break

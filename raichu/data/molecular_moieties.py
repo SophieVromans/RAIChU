@@ -1,6 +1,6 @@
 import os
 
-from pikachu.general import read_smiles
+from pikachu.general import read_smiles, draw_structure
 from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner
 from raichu.reactions.general import initialise_atom_attributes
 
@@ -61,11 +61,21 @@ def parse_smiles():
     return name_to_smiles
 
 
-NAME_TO_ELONGATION_MONOMER = {'MALONYL_COA': PksElongationUnit('Malonyl CoA', 'CC=O', 0, 1),
-                              'METHYLMALONYL_COA': PksElongationUnit('Methylmalonyl CoA', 'O=CCC', 2, 1),
-                              'METHOXYMALONYL_ACP': PksElongationUnit("Methoxymalonyl ACP", 'O=CCOC', 2, 1),
-                              'ETHYLMALONYL_COA': PksElongationUnit("Ethylmalonyl CoA", 'O=CCCC', 2, 1),
-                              'WILDCARD': PksElongationUnit("Wildcard", 'O=CC*', 2, 1)}
+def make_elongation_monomer(name):
+    if name == 'MALONYL_COA':
+        monomer = PksElongationUnit('Malonyl CoA', 'CC=O', 0, 1)
+    elif name == 'METHYLMALONYL_COA':
+        monomer = PksElongationUnit('Methylmalonyl CoA', 'O=CCC', 2, 1)
+    elif name == 'METHOXYMALONYL_ACP':
+        monomer = PksElongationUnit("Methoxymalonyl ACP", 'O=CCOC', 2, 1)
+    elif name == 'ETHYLMALONYL_COA':
+        monomer = PksElongationUnit("Ethylmalonyl CoA", 'O=CCCC', 2, 1)
+    elif name == 'WILDCARD':
+        monomer = PksElongationUnit("Wildcard", 'O=CC*', 2, 1)
+    else:
+        raise ValueError(f"{name} not recognised by RAIChU as PKS elongation unit.")
+
+    return monomer
 
 
 THIOESTERBOND = BondDefiner('thioester_bond', 'SC(C)=O', 0, 1)

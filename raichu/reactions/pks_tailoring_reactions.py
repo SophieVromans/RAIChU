@@ -1,11 +1,12 @@
 from typing import Tuple
 
 from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner, find_atoms, find_bonds
+from pikachu.reactions.basic_reactions import condensation, hydrolysis, internal_condensation
 from pikachu.chem.chirality import same_chirality
 from pikachu.chem.structure import Structure
-
 from raichu.domain.domain_types import KRDomainSubtype, ERDomainSubtype
 from raichu.reactions.general import initialise_atom_attributes
+
 
 
 RECENT_ELONGATION = BondDefiner('recent_elongation', 'O=C(C)CC(=O)S', 0, 1)
@@ -14,10 +15,18 @@ RECENT_REDUCTION_MMAL_CHIRAL_C = GroupDefiner('recent_reduction_mmal_chiral_c', 
 RECENT_REDUCTION_C = GroupDefiner('recent_reduction_mal', 'OCCC(=O)S', 2)
 RECENT_REDUCTION_CC = BondDefiner('recent_reduction_C-C', 'OCCC(=O)S', 1, 2)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
+RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
 ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
 ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND=BondDefiner("hydroxyl_group_two_module_upstream_alpha_with_double_bond","OC\C=C\CCC(S)=O",0,1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND=BondDefiner("hydroxyl_group_two_module_upstream_beta_with_double_bond","OCC\C=C\CCC(S)=O",0,1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED=BondDefiner("hydroxyl_group_two_module_upstream_alpha_with_double_bond_shifted","O\C=C\CCCC(S)=O",0,1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED=BondDefiner("hydroxyl_group_two_module_upstream_beta_with_double_bond_shifted","OC\C=C\CCCC(S)=O",0,1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA=BondDefiner("hydroxyl_group_two_module_upstream_alpha","OCCCCCC(S)=O",0,1)
+HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA=BondDefiner("hydroxyl_group_two_module_upstream_beta","OCCCCCCC(S)=O",0,1)
 
+#STILL MISSING: E/Z-configured double bonds, E/Z-Gamma-beta-dehydrogenase
 
 def ketoreduction(chain_intermediate: Structure, kr_type: KRDomainSubtype) -> Tuple[Structure, bool]:
     """
@@ -309,4 +318,380 @@ def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -
             else:
                 raise ValueError(f"RAIChU does not support ER domain subtype {er_subtype.name}")
 
-    return chain_intermediate, True
+    return chain_intermediate
+#trans-AT-PKS tailoringReactions
+def hydroxylation(target_atom, structure):
+    """
+    Returns the hydroxylated structure thats hydroxylated at the target atom.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+
+    hydroxyl_group = read_smiles('o')
+    hydroxyl_group.add_attributes(ATTRIBUTES, boolean=True)
+    oxygen = hydroxyl_group.atoms[0]
+    hydrogen_1 = hydroxyl_group.atoms[1]
+    bond_1 = oxygen.get_bond(hydrogen_1)
+    hydrogen_2 = target_atom.get_neighbour('H')
+    if not hydrogen_2:
+        raise Exception("Can't oxidate this atom!")
+
+    bond_2 = target_atom.get_bond(hydrogen_2)
+
+    hydroxylated_structure = combine_structures([structure, hydroxyl_group])
+
+    hydroxylated_structure.break_bond(bond_1)
+    hydroxylated_structure.break_bond(bond_2)
+
+    hydroxylated_structure.make_bond(oxygen, target_atom, hydroxylated_structure.find_next_bond_nr())
+    hydroxylated_structure.make_bond(hydrogen_1, hydrogen_2,hydroxylated_structure.find_next_bond_nr())
+
+    structures = hydroxylated_structure.split_disconnected_structures()
+
+    for s in structures:
+        if oxygen.nr in s.atoms:
+            return s
+def methylation(target_atom, structure):
+    """
+    Returns the structure thats methylated at the target atom.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+
+
+    methyl_group = read_smiles('C')
+    methyl_group.add_attributes(ATTRIBUTES, boolean=True)
+    carbon = methyl_group.atoms[0]
+    hydrogen_1 = methyl_group.atoms[1]
+    bond_1 = carbon.get_bond(hydrogen_1)
+
+    hydrogen_2 = target_atom.get_neighbour('H')
+    if not hydrogen_2:
+        raise Exception("Can't methylate this atom!")
+
+    bond_2 = target_atom.get_bond(hydrogen_2)
+
+    methylated_structure = combine_structures([structure, methyl_group])
+
+    methylated_structure.break_bond(bond_1)
+    methylated_structure.break_bond(bond_2)
+
+    methylated_structure.make_bond(carbon, target_atom, methylated_structure.find_next_bond_nr())
+    methylated_structure.make_bond(hydrogen_1, hydrogen_2, methylated_structure.find_next_bond_nr())
+
+    structures = methylated_structure.split_disconnected_structures()
+
+    for s in structures:
+        if carbon.nr in s.atoms:
+            return s
+def find_alpha_c(structure):
+    """
+    Returns the atom that is the current alpha c atom
+    structure: PIKAChU Structure object
+    """
+    locations = structure.find_substructures(MOST_RECENT_ELONGATION.structure)
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_REDUCTION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_REDUCTION.atom_2]
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_DEHYDRATION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_DEHYDRATION.atom_2]
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_EONYL_REDUCTION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_EONYL_REDUCTION.atom_2]
+    else:
+                    for match in locations:
+                        atom_1 = match.atoms[MOST_RECENT_ELONGATION.atom_2]
+    return atom_1
+def find_beta_c(structure):
+    """
+    Returns the atom that is the current beta c atom
+    structure: PIKAChU Structure object
+    """
+    locations = structure.find_substructures(MOST_RECENT_ELONGATION.structure)
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_REDUCTION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_REDUCTION.atom_1]
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_DEHYDRATION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_DEHYDRATION.atom_1]
+    if len(locations)==0:
+        locations = structure.find_substructures(MOST_RECENT_EONYL_REDUCTION.structure)
+        for match in locations:
+            atom_1 = match.atoms[MOST_RECENT_EONYL_REDUCTION.atom_1]
+    else:
+                    for match in locations:
+                        atom_1 = match.atoms[MOST_RECENT_ELONGATION.atom_1]
+    return atom_1
+def find_beta_c_oh(structure):
+    """
+    Returns the O atom that is on the current beta c atom
+    structure: PIKAChU Structure object
+    """
+    locations = structure.find_substructures(RECENT_REDUCTION_COH.structure)
+    for match in locations:
+        atom_1 = match.atoms[RECENT_REDUCTION_COH.atom_1]
+    return atom_1
+def find_OH_two_modules_upstream(structure):
+    """
+    Returns the O atom that is connected to the first hydroxygroup two modules upstream (also if chain contains double bonds)
+    structure: PIKAChU Structure object
+    """
+    locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.structure)
+    bonds=[]
+    if len(locations)==0:
+        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.structure)
+        for match in locations:
+            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.atom_1]
+            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.atom_2]
+            bond = structure.bond_lookup[atom_1][atom_2]
+            bonds.append(bond)
+        return bonds
+    if len(locations)==0:
+        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.structure)
+        for match in locations:
+            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.atom_1]
+            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.atom_2]
+            bond = structure.bond_lookup[atom_1][atom_2]
+            bonds.append(bond)
+        return bonds
+    if len(locations)==0:
+        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.structure)
+        for match in locations:
+            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.atom_1]
+            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.atom_2]
+            bond = structure.bond_lookup[atom_1][atom_2]
+            bonds.append(bond)
+        return bonds
+
+    if len(locations)==0:
+        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.structure)
+        for match in locations:
+            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.atom_1]
+            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.atom_2]
+            bond = structure.bond_lookup[atom_1][atom_2]
+            bonds.append(bond)
+        return bonds
+
+    if len(locations)==0:
+        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.structure)
+        for match in locations:
+            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.atom_1]
+            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.atom_2]
+            bond = structure.bond_lookup[atom_1][atom_2]
+            bonds.append(bond)
+        return bonds
+
+    else:
+            for match in locations:
+                atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.atom_1]
+                atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.atom_2]
+                bond = structure.bond_lookup[atom_1][atom_2]
+                bonds.append(bond)
+            return bonds
+
+def find_cc_dh_gamma_beta(structure):
+    """
+    Returns the Bond between the two C's that needs to be doubled for shifted double bonds
+
+    structure: PIKAChU Structure object
+    """
+    locations = structure.find_substructures(RECENT_REDUCTION_CC_SHIFTED.structure)
+    bonds = []
+    for match in locations:
+        atom_1 = match.atoms[RECENT_REDUCTION_CC_SHIFTED.atom_1]
+        atom_2 = match.atoms[RECENT_REDUCTION_CC_SHIFTED.atom_2]
+        bond = structure.bond_lookup[atom_1][atom_2]
+        bonds.append(bond)
+    return bonds
+
+def smallest_cyclisation(structure):
+    """
+    Cyclises with the OH group two modules upstream to the smalles possible ring
+
+    structure: PIKAChU Structure object
+    """
+    #reduce Ketogroup first
+    structure=ketoreductase(structure)
+    oh_bond=find_OH_two_modules_upstream(structure)
+    assert len(oh_bond)>0, "No hydroxy group two modules upstream availiable"
+    oh_bond=oh_bond[0]
+    h_bond=find_O_H(structure)[0]
+    structure=internal_condensation(structure, oh_bond, h_bond)[0]
+    draw_structure(structure)
+    return structure
+
+
+def alpha_methyl_transferase(structure):
+    """
+    Returns the structure thats methylated at the alpha-c.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+    #find atom to add methylgroup
+    alpha_c=find_alpha_c(structure)
+    structure=methylation(alpha_c,structure)
+    return structure
+
+def beta_methyl_transferase(structure):
+    """
+    Returns the structure thats methylated at the beta-c.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+    #find atom to add methylgroup
+    beta_c=find_beta_c(structure)
+    structure=methylation(beta_c,structure)
+    return structure
+
+def beta_hydroxy_methyl_transferase(structure):
+    """
+    Returns the structure thats methylated at the beta-oh-goup.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+    #find atom to add methylgroup
+    beta_c_oh=find_beta_c_oh(structure)
+    structure=methylation(beta_c_oh,structure)
+    return structure
+
+def alpha_hydroxylase(structure):
+    """
+    Returns the structure thats hydroxylated at the alpha-c.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+    #find atom to add methylgroup
+    alpha_c=find_alpha_c(structure)
+    structure=hydroxylation(alpha_c,structure)
+    return structure
+
+def alpha_L_methyl_transferase(structure):
+    """
+    Returns the structure thats methylated at the alpha- c in L configuration.
+
+    structure: PIKAChU Structure object
+    target_atom:  PIKAChU atom object
+    """
+    #find atom to add methylgroup
+    alpha_c=find_alpha_c(structure)
+    structure=methylation(alpha_c,structure)
+    structure.refresh_structure()
+    alpha_c.chirality="counterclockwise"
+    structure.refresh_structure()
+    return methylated_structure
+
+def gamma_beta_dehydratase(chain_intermediate):
+    """
+    Performs the dehydratase reaction on the PKS chain intermediate wuth shifted double bonds, returns
+    the reaction product as a PIKAChU Structure object
+
+    chain_intermediate: PIKAChU Structure object, PKS chain intermediate where
+    the beta ketone group has been recently reduced by the KR domain
+    """
+    # Reset atom colours to black
+    for atom in chain_intermediate.graph:
+        atom.draw.colour = 'black'
+    for bond_nr, bond in chain_intermediate.bonds.items():
+        bond.set_bond_summary()
+
+    # Find and define the atoms that participate in the bond changes
+    co_bond = find_oh_dh(chain_intermediate)
+    for bond in co_bond[:]:
+        for neighbour in bond.neighbours:
+            if neighbour.type == 'C':
+                c2 = neighbour
+            elif neighbour.type == 'O':
+                o_oh = neighbour
+    cc_bond = find_cc_dh_gamma_beta(chain_intermediate)
+    for bond in cc_bond[:]:
+        bond.type = 'double'
+        for neighbour in bond.neighbours:
+            if neighbour == c2:
+                pass
+            else:
+                c1 = neighbour
+
+    # Remove hydroxyl group from c2
+    for bond in co_bond[:]:
+        chain_intermediate.break_bond(bond)
+    # split = chain_intermediate.split_disconnected_structures()
+    # chain_intermediate, oh = split
+
+    # Remove H-atom from c1
+    for atom in chain_intermediate.graph:
+        if atom == c1:
+            for neighbour in atom.neighbours:
+                if neighbour.type == 'H':
+                    hydrogen = neighbour
+                    for bond in neighbour.bonds:
+                        bond_to_break = bond
+                    break
+    chain_intermediate.break_bond(bond_to_break)
+    # the orbitals of the C atom.
+    for atom in chain_intermediate.graph:
+        if atom == c1:
+            c1 = atom
+
+    # Make double c1=c2 bond
+    form_double_bond(c1, c2, chain_intermediate.bond_lookup[c1][c2])
+
+    # Make bond between removed hydroxyl group and hydrogen atom to form water
+    next_bond_nr = chain_intermediate.find_next_bond_nr()
+    chain_intermediate.make_bond(hydrogen, o_oh, next_bond_nr)
+
+    # Remove separate water structure from the Structure object
+    one, two = chain_intermediate.split_disconnected_structures()
+    if len(one.graph) == 3:
+        water = one
+        chain_intermediate = two
+    else:
+        water = two
+        chain_intermediate = one
+
+    # After double bond formation, remove chirality c1 and c2
+    for atom in chain_intermediate.graph:
+        if atom == c1:
+            atom.chiral = None
+        elif atom == c2:
+            atom.chiral = None
+
+    # Add colouring
+    for atom in chain_intermediate.graph:
+        if atom == c1:
+            for bond in atom.bonds:
+                for neighbour in bond.neighbours:
+                    if neighbour == c2:
+                        the_bond = bond
+    for atom in the_bond.neighbours:
+        atom.draw.colour = 'blue'
+    for atom in chain_intermediate.graph:
+        if atom == c2:
+            for bond in atom.bonds:
+                for neighbour in bond.neighbours:
+                    if neighbour == c1:
+                        the_bond = bond
+    for atom in the_bond.neighbours:
+        atom.draw.colour = 'blue'
+
+    #Refresh structure :)
+    for atom in chain_intermediate.graph:
+        atom.get_connectivity()
+    chain_intermediate.set_atom_neighbours()
+    chain_intermediate.set_connectivities()
+    chain_intermediate.find_cycles()
+    for bond_nr, bond in chain_intermediate.bonds.items():
+        bond.set_bond_summary()
+
+    return chain_intermediate

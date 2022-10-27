@@ -10,9 +10,9 @@ from raichu.reactions.chain_release import release_linear_reduction, release_lin
 from raichu.domain.domain_types import DomainSuperClass, RecognitionDomainType, CarrierDomainType, \
     TailoringDomainType, SynthesisDomainType, TerminationDomainType, KSDomainSubtype, KRDomainSubtype, ERDomainSubtype
 
-from dataclasses import dataclass    
-    
- 
+from dataclasses import dataclass
+
+
 @dataclass
 class Domain:
     supertype: DomainSuperClass
@@ -67,12 +67,27 @@ class TailoringDomain(Domain):
         """
         Performs tailoring reaction
         """
+        #STILL MISSING: E/Z-configured double bonds, E/Z-Gamma-beta-dehydrogenase
         if self.type.name == 'KR' or self.type.name == 'DUMMY_KR':
             return ketoreduction(structure, self.subtype)
         elif self.type.name == 'DH' or self.type.name == 'DUMMY_DH':
             return dehydration(structure)
         elif self.type.name == 'ER' or self.type.name == 'DUMMY_ER':
             return enoylreduction(structure, self.subtype)
+        elif self.type.name == 'ALMT' or self.type.name == 'DUMMY_ALMT':
+            return alpha_L_methyl_transferase(structure)
+        elif self.type.name == 'AMT' or self.type.name == 'DUMMY_AMT':
+            return alpha_methyl_transferase(structure)
+        elif self.type.name == 'SC' or self.type.name == 'DUMMY_SC':
+            return smallest_cyclisation(structure)
+        elif self.type.name == 'AH' or self.type.name == 'DUMMY_AH':
+            return alpha_hydroxylase(structure)
+        elif self.type.name == 'GDH' or self.type.name == 'DUMMY_GDH':
+            return gamma_beta_dehydratase(structure)
+        elif self.type.name == 'OMT' or self.type.name == 'DUMMY_OMT':
+            return beta_hydroxy_methyl_transferase(structure)
+        elif self.type.name == 'BMT' or self.type.name == 'DUMMY_BMT':
+            return beta_methyl_transferase(structure)
         elif self.type.name == 'E':
             return epimerize(structure)
         elif self.type.name == 'nMT':
@@ -122,7 +137,7 @@ class RecognitionDomain(Domain):
 
         superclass = DomainSuperClass.from_string("RECOGNITION")
         domain_type = RecognitionDomainType.from_string(domain_type)
- 
+
 
         if domain_subtype is not None:
             raise ValueError(f"RAIChU does not support domain subtypes for {domain_type.name}")

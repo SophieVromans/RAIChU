@@ -8,6 +8,7 @@ from raichu.domain.domain import Domain, TailoringDomain, RecognitionDomain, \
 from raichu.central_chain_detection.label_central_chain import label_pk_central_chain, label_nrp_central_chain
 from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
+from raichu.drawing.drawer import RaichuDrawer
 
 
 

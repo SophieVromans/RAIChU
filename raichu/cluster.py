@@ -23,13 +23,8 @@ class Cluster:
         self.linear_product = None
         self.cyclised_products = []
         self.module_mechanisms = []
-        # print("cluster_before")
-        # for module in self.modules:
-        #     print(module.tailoring_domains)
         self.handle_transat()
-        # print("cluster_after")
-        # for module in self.modules:
-        #     print(module.tailoring_domains)
+
 
     def handle_transat(self):
         for i, module in enumerate(self.modules):
@@ -56,8 +51,9 @@ class Cluster:
                             for dummy_domain_type, dummy_domain_subtype in TRANSATOR_CLADE_TO_TAILORING_REACTIONS[next_module.synthesis_domain.subtype.name]:
                                 self.modules[i].tailoring_domains.append(TailoringDomain(dummy_domain_type,
                                                                                          dummy_domain_subtype))
-                if TRANSATOR_CLADE_TO_ELONGATING[module.synthesis_domain.subtype.name] == False:
-                    self.modules[i].synthesis_domain.is_elongating = False
+                if module.synthesis_domain:
+                    if TRANSATOR_CLADE_TO_ELONGATING[module.synthesis_domain.subtype.name]==False:
+                        self.modules[i].synthesis_domain.is_elongating==False
                 self.modules[i].recognition_domain.substrate = substrate
 
     def compute_structures(self, compute_cyclic_products=True):

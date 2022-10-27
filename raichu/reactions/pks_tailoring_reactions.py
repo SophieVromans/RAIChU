@@ -6,7 +6,7 @@ from pikachu.chem.chirality import same_chirality
 from pikachu.chem.structure import Structure
 from raichu.domain.domain_types import KRDomainSubtype, ERDomainSubtype
 from raichu.reactions.general import initialise_atom_attributes
-
+from pikachu.general import read_smiles
 
 
 RECENT_ELONGATION = BondDefiner('recent_elongation', 'O=C(C)CC(=O)S', 0, 1)
@@ -14,6 +14,7 @@ RECENT_REDUCTION_COH = BondDefiner('recent_reduction_C-OH', 'OC(C)CC(=O)S', 0, 1
 RECENT_REDUCTION_MMAL_CHIRAL_C = GroupDefiner('recent_reduction_mmal_chiral_c', 'CCC(C(=O)S)C', 2)
 RECENT_REDUCTION_C = GroupDefiner('recent_reduction_mal', 'OCCC(=O)S', 2)
 RECENT_REDUCTION_CC = BondDefiner('recent_reduction_C-C', 'OCCC(=O)S', 1, 2)
+RECENT_REDUCTION_CC_SHIFTED = BondDefiner('recent_reduction_C-C_shifted', 'CC(O)CC(S)=O', 0, 1)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
 RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
@@ -391,44 +392,44 @@ def find_alpha_c(structure):
     Returns the atom that is the current alpha c atom
     structure: PIKAChU Structure object
     """
-    locations = structure.find_substructures(MOST_RECENT_ELONGATION.structure)
+    locations = structure.find_substructures(RECENT_ELONGATION.structure)
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_REDUCTION.structure)
+        locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_REDUCTION.atom_2]
+            atom_1 = match.atoms[RECENT_REDUCTION_CC.atom_2]
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_DEHYDRATION.structure)
+        locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_DEHYDRATION.atom_2]
+            atom_1 = match.atoms[RECENT_DEHYDRATION.atom_2]
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_EONYL_REDUCTION.structure)
+        locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_EONYL_REDUCTION.atom_2]
+            atom_1 = match.atoms[RECENT_EONYL_REDUCTION.atom_2]
     else:
                     for match in locations:
-                        atom_1 = match.atoms[MOST_RECENT_ELONGATION.atom_2]
+                        atom_1 = match.atoms[RECENT_ELONGATION.atom_2]
     return atom_1
 def find_beta_c(structure):
     """
     Returns the atom that is the current beta c atom
     structure: PIKAChU Structure object
     """
-    locations = structure.find_substructures(MOST_RECENT_ELONGATION.structure)
+    locations = structure.find_substructures(RECENT_ELONGATION.structure)
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_REDUCTION.structure)
+        locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_REDUCTION.atom_1]
+            atom_1 = match.atoms[RECENT_REDUCTION_CC.atom_1]
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_DEHYDRATION.structure)
+        locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_DEHYDRATION.atom_1]
+            atom_1 = match.atoms[RECENT_DEHYDRATION.atom_1]
     if len(locations)==0:
-        locations = structure.find_substructures(MOST_RECENT_EONYL_REDUCTION.structure)
+        locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
         for match in locations:
-            atom_1 = match.atoms[MOST_RECENT_EONYL_REDUCTION.atom_1]
+            atom_1 = match.atoms[RECENT_EONYL_REDUCTION.atom_1]
     else:
                     for match in locations:
-                        atom_1 = match.atoms[MOST_RECENT_ELONGATION.atom_1]
+                        atom_1 = match.atoms[RECENT_ELONGATION.atom_1]
     return atom_1
 def find_beta_c_oh(structure):
     """

@@ -149,7 +149,7 @@ if __name__ == "__main__":
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", "KS",
-                                                                                     'LACST', None, True,
+                                                                                     'UNST', None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'KS',
-                                                                                     "SHDB", None, True,
+                                                                                     "DB", None, True,
                                                                                      True),
 
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
@@ -192,7 +192,7 @@ if __name__ == "__main__":
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'KS',
-                                                                                     "PYR", None, True,
+                                                                                     "SHDB", None, True,
                                                                                      True),
 
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,

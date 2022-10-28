@@ -320,9 +320,10 @@ class TransATPKSModule(_Module):
                                     structure = bmt_domain.do_tailoring(structure)
                 elif gdh_domain and gdh_domain.active and gdh_domain.used:
                     structure = gdh_domain.do_tailoring(structure)
-                RaichuDrawer(structure).draw_structure()
+
         if amt_domain and amt_domain.active and amt_domain.used:
             structure = amt_domain.do_tailoring(structure)
+        #RaichuDrawer(structure).draw_structure()
         if almt_domain and almt_domain.active and almt_domain.used:
                     structure = almt_domain.do_tailoring(structure)
         if sc_domain and sc_domain.active and sc_domain.used:
@@ -340,7 +341,6 @@ class TransATPKSModule(_Module):
         else:
             structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
         structure = self.do_pks_tailoring(structure)
-        RaichuDrawer(structure).draw_structure()
         return structure
 
 
@@ -360,5 +360,5 @@ class NRPSModule(_Module):
             structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
 
         structure = self.do_nrps_tailoring(structure)
-
+        RaichuDrawer(structure).draw_structure()
         return structure

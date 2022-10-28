@@ -1323,5 +1323,3 @@ def get_angle(vector1, vector2):
     difference = Vector.subtract_vectors(vector1, vector2)
     difference_angle = difference.angle()
     return difference_angle
-
-

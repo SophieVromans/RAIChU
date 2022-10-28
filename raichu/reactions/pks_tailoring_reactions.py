@@ -7,6 +7,11 @@ from raichu.reactions.general import initialise_atom_attributes
 from pikachu.general import read_smiles
 from raichu.data.attributes import ATTRIBUTES
 
+FIRST_C = GroupDefiner('first_c', 'CC(S)=O', 1)
+RECENT_ALPHA_C = GroupDefiner('recent_alpha_c', 'CCC(S)=O', 1)
+RECENT_BETA_C = GroupDefiner('recent_beta_c', 'CCC(S)=O', 0)
+RECENT_BETA_C_OH = GroupDefiner('recent_beta_c_oh', 'OCCC(S)=O', 0)
+RECENT_ALPHA_METHYL_C = GroupDefiner('recent_alpha_methyl_c', 'CC(C)C(S)=O', 3)
 RECENT_ELONGATION = BondDefiner('recent_elongation', 'O=C(C)CC(=O)S', 0, 1)
 RECENT_ELONGATION_CC = BondDefiner('recent_elongation_CC', 'O=C(C)CC(=O)S', 1, 2)
 RECENT_REDUCTION_COH = BondDefiner('recent_reduction_C-OH', 'OC(C)CC(=O)S', 0, 1)
@@ -17,6 +22,7 @@ RECENT_REDUCTION_CC_SHIFTED = BondDefiner('recent_reduction_C-C_shifted', 'CC(O)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
 RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
 RECENT_EONYL_REDUCTION_CC=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,1)
+RECENT_REDUCTION_CH=BondDefiner('recent_reduction_C-H', '[H]C(C)(O)CC(S)=O', 0, 1)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
 ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
 ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
@@ -322,7 +328,7 @@ def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -
 
     return chain_intermediate
 #trans-AT-PKS tailoringReactions
-def hydroxylation(target_atom, structure):
+def hydroxylation(target_atom, structure: Structure) -> Structure:
     """
     Returns the hydroxylated structure thats hydroxylated at the target atom.
 
@@ -354,7 +360,7 @@ def hydroxylation(target_atom, structure):
     for s in structures:
         if oxygen.nr in s.atoms:
             return s
-def methylation(target_atom, structure):
+def methylation(target_atom, structure: Structure) -> Structure:
     """
     Returns the structure thats methylated at the target atom.
 
@@ -388,150 +394,38 @@ def methylation(target_atom, structure):
     for s in structures:
         if carbon.nr in s.atoms:
             return s
-def find_alpha_c(structure):
-    """
-    Returns the atom that is the current alpha c atom
-    structure: PIKAChU Structure object
-    """
-    locations = structure.find_substructures(RECENT_ELONGATION.structure)
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_REDUCTION_CC.atom_1]
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_DEHYDRATION.atom_1]
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_EONYL_REDUCTION.atom_1]
-    else:
-                    for match in locations:
-                        atom_2 = match.atoms[RECENT_ELONGATION.atom_1]
-    return atom_2
-def find_beta_c(structure):
-    """
-    Returns the atom that is the current beta c atom
-    structure: PIKAChU Structure object
-    """
-    locations = structure.find_substructures(RECENT_ELONGATION_CC.structure)
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_REDUCTION_CC.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_REDUCTION_CC.atom_2]
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_DEHYDRATION.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_DEHYDRATION.atom_2]
-    if len(locations)==0:
-        locations = structure.find_substructures(RECENT_EONYL_REDUCTION.structure)
-        for match in locations:
-            atom_2 = match.atoms[RECENT_EONYL_REDUCTION_CC.atom_2]
-    else:
-                    for match in locations:
-                        atom_2 = match.atoms[RECENT_EONYL_REDUCTION_CC.atom_2]
-    return atom_2
-def find_beta_c_oh(structure):
-    """
-    Returns the O atom that is on the current beta c atom
-    structure: PIKAChU Structure object
-    """
-    locations = structure.find_substructures(RECENT_REDUCTION_COH.structure)
-    for match in locations:
-        atom_1 = match.atoms[RECENT_REDUCTION_COH.atom_1]
-    return atom_1
-def find_OH_two_modules_upstream(structure):
+
+def find_OH_two_modules_upstream(structure: Structure):
     """
     Returns the O atom that is connected to the first hydroxygroup two modules upstream (also if chain contains double bonds)
     structure: PIKAChU Structure object
     """
-    locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.structure)
-    bonds=[]
-    if len(locations)==0:
-        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.structure)
-        for match in locations:
-            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.atom_1]
-            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND_SHIFTED.atom_2]
-            bond = structure.bond_lookup[atom_1][atom_2]
-            bonds.append(bond)
-        return bonds
-    if len(locations)==0:
-        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.structure)
-        for match in locations:
-            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.atom_1]
-            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA_WITH_DOUBLE_BOND.atom_2]
-            bond = structure.bond_lookup[atom_1][atom_2]
-            bonds.append(bond)
-        return bonds
-    if len(locations)==0:
-        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.structure)
-        for match in locations:
-            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.atom_1]
-            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA.atom_2]
-            bond = structure.bond_lookup[atom_1][atom_2]
-            bonds.append(bond)
-        return bonds
-
-    if len(locations)==0:
-        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.structure)
-        for match in locations:
-            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.atom_1]
-            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND.atom_2]
-            bond = structure.bond_lookup[atom_1][atom_2]
-            bonds.append(bond)
-        return bonds
-
-    if len(locations)==0:
-        locations = structure.find_substructures(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.structure)
-        for match in locations:
-            atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.atom_1]
-            atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED.atom_2]
-            bond = structure.bond_lookup[atom_1][atom_2]
-            bonds.append(bond)
-        return bonds
-
-    else:
-            for match in locations:
-                atom_1 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.atom_1]
-                atom_2 = match.atoms[HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA.atom_2]
-                bond = structure.bond_lookup[atom_1][atom_2]
-                bonds.append(bond)
-            return bonds
-
-def find_cc_dh_gamma_beta(structure):
-    """
-    Returns the Bond between the two C's that needs to be doubled for shifted double bonds
-
-    structure: PIKAChU Structure object
-    """
-    locations = structure.find_substructures(RECENT_REDUCTION_CC_SHIFTED.structure)
-    bonds = []
-    for match in locations:
-        atom_1 = match.atoms[RECENT_REDUCTION_CC_SHIFTED.atom_1]
-        atom_2 = match.atoms[RECENT_REDUCTION_CC_SHIFTED.atom_2]
-        bond = structure.bond_lookup[atom_1][atom_2]
-        bonds.append(bond)
+    bonds= find_bonds(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_ALPHA,structure)
+    if not bonds:
+        bonds= find_bonds(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA,structure)
+    if not bonds:
+        bonds= find_bonds(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND,structure)
+    if not bonds:
+        bonds= find_bonds(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED,structure)
     return bonds
 
-def smallest_cyclisation(structure):
+def smallest_cyclisation(structure: Structure) -> Structure:
     """
     Cyclises with the OH group two modules upstream to the smalles possible ring
 
     structure: PIKAChU Structure object
     """
     #reduce Ketogroup first
-    structure=ketoreductase(structure)
+    structure=ketoreduction(structure, KRDomainSubtype(1))
     oh_bond=find_OH_two_modules_upstream(structure)
     assert len(oh_bond)>0, "No hydroxy group two modules upstream availiable"
     oh_bond=oh_bond[0]
-    h_bond=find_O_H(structure)[0]
+    h_bond=find_bonds(RECENT_REDUCTION_CH, structure)[0]
     structure=internal_condensation(structure, oh_bond, h_bond)[0]
-    draw_structure(structure)
     return structure
 
 
-def alpha_methyl_transferase(structure):
+def alpha_methyl_transferase(structure: Structure) -> Structure:
     """
     Returns the structure thats methylated at the alpha-c.
 
@@ -539,12 +433,11 @@ def alpha_methyl_transferase(structure):
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_alpha_c(structure)
-    print(alpha_c)
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
     structure=methylation(alpha_c,structure)
     return structure
 
-def beta_methyl_transferase(structure):
+def beta_methyl_transferase(structure: Structure) -> Structure:
     """
     Returns the structure thats methylated at the beta-c.
 
@@ -552,11 +445,11 @@ def beta_methyl_transferase(structure):
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    beta_c=find_beta_c(structure)
+    beta_c=find_atoms(RECENT_BETA_C, structure)[0]
     structure=methylation(beta_c,structure)
     return structure
 
-def beta_hydroxy_methyl_transferase(structure):
+def beta_hydroxy_methyl_transferase(structure: Structure) -> Structure:
     """
     Returns the structure thats methylated at the beta-oh-goup.
 
@@ -564,11 +457,12 @@ def beta_hydroxy_methyl_transferase(structure):
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    beta_c_oh=find_beta_c_oh(structure)
+
+    beta_c_oh=find_atoms(RECENT_BETA_C_OH, structure)[0]
     structure=methylation(beta_c_oh,structure)
     return structure
 
-def alpha_hydroxylase(structure):
+def alpha_hydroxylase(structure: Structure) -> Structure:
     """
     Returns the structure thats hydroxylated at the alpha-c.
 
@@ -576,11 +470,11 @@ def alpha_hydroxylase(structure):
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_alpha_c(structure)
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
     structure=hydroxylation(alpha_c,structure)
     return structure
 
-def alpha_L_methyl_transferase(structure):
+def alpha_L_methyl_transferase(structure: Structure) -> Structure:
     """
     Returns the structure thats methylated at the alpha- c in L configuration.
 
@@ -588,14 +482,43 @@ def alpha_L_methyl_transferase(structure):
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_alpha_c(structure)
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
     structure=methylation(alpha_c,structure)
     structure.refresh_structure()
-    alpha_c.chirality="counterclockwise"
-    structure.refresh_structure()
-    return methylated_structure
+    h_atom = alpha_c.get_neighbour('H')
+    c_atoms = alpha_c.get_neighbours('C')
 
-def gamma_beta_dehydratase(chain_intermediate):
+    # Define the two carbons adjacent to the carbonyl atom as 'top_c' and 'bottom_c'
+    methyl_c = find_atoms(RECENT_ALPHA_METHYL_C, structure)[0]
+    assert methyl_c
+    top_cs = find_atoms(FIRST_C, structure)
+    assert len(top_cs) == 1
+
+    top_c = top_cs[0]
+    assert top_c in c_atoms
+
+    bottom_c = None
+    for atom in c_atoms:
+        if atom != top_c and atom != methyl_c:
+            bottom_c = atom
+
+    assert bottom_c
+
+    # Set the chirality of the carbonyl carbon
+
+    counterclockwise_order = [h_atom, methyl_c, top_c, bottom_c]
+
+    if same_chirality(counterclockwise_order, alpha_c.neighbours):
+        alpha_c.chiral = 'clockwise'
+    else:
+        alpha_c.chiral = 'counterclockwise'
+    alpha_c.chirality="counterclockwise"
+    initialise_atom_attributes(structure)
+    structure.refresh_structure()
+
+    return structure
+
+def gamma_beta_dehydratase(chain_intermediate: Structure) -> Structure:
     """
     Performs the dehydratase reaction on the PKS chain intermediate wuth shifted double bonds, returns
     the reaction product as a PIKAChU Structure object
@@ -603,36 +526,38 @@ def gamma_beta_dehydratase(chain_intermediate):
     chain_intermediate: PIKAChU Structure object, PKS chain intermediate where
     the beta ketone group has been recently reduced by the KR domain
     """
-    # Reset atom colours to black
-    for atom in chain_intermediate.graph:
-        atom.draw.colour = 'black'
-    for bond_nr, bond in chain_intermediate.bonds.items():
-        bond.set_bond_summary()
-
     # Find and define the atoms that participate in the bond changes
-    co_bond = find_oh_dh(chain_intermediate)
-    for bond in co_bond[:]:
-        for neighbour in bond.neighbours:
-            if neighbour.type == 'C':
-                c2 = neighbour
-            elif neighbour.type == 'O':
-                o_oh = neighbour
-    cc_bond = find_cc_dh_gamma_beta(chain_intermediate)
-    for bond in cc_bond[:]:
-        bond.type = 'double'
-        for neighbour in bond.neighbours:
-            if neighbour == c2:
-                pass
-            else:
-                c1 = neighbour
+    co_bonds = find_bonds(RECENT_REDUCTION_COH, chain_intermediate)
+    cc_bonds = find_bonds(RECENT_REDUCTION_CC_SHIFTED, chain_intermediate)
+
+    if not len(co_bonds) == 1 or not len(cc_bonds) == 1:
+        return chain_intermediate
+
+    c1 = None
+    c2 = None
+    o_oh = None
+
+    co_bond = co_bonds[0]
+
+    for neighbour in co_bond.neighbours:
+        if neighbour.type == 'C':
+            c2 = neighbour
+        elif neighbour.type == 'O':
+            o_oh = neighbour
+
+    cc_bond = cc_bonds[0]
+
+    for neighbour in cc_bond.neighbours:
+        if neighbour != c2:
+            c1 = neighbour
 
     # Remove hydroxyl group from c2
-    for bond in co_bond[:]:
-        chain_intermediate.break_bond(bond)
-    # split = chain_intermediate.split_disconnected_structures()
-    # chain_intermediate, oh = split
+    chain_intermediate.break_bond(co_bond)
 
     # Remove H-atom from c1
+    bond_to_break = None
+    hydrogen = None
+
     for atom in chain_intermediate.graph:
         if atom == c1:
             for neighbour in atom.neighbours:
@@ -641,60 +566,29 @@ def gamma_beta_dehydratase(chain_intermediate):
                     for bond in neighbour.bonds:
                         bond_to_break = bond
                     break
+
+    assert bond_to_break and hydrogen
+
     chain_intermediate.break_bond(bond_to_break)
+
+    # Patch. When the bond is broken, the electron is not removed from
     # the orbitals of the C atom.
-    for atom in chain_intermediate.graph:
-        if atom == c1:
-            c1 = atom
+    c1 = chain_intermediate.get_atom(c1)
 
     # Make double c1=c2 bond
-    form_double_bond(c1, c2, chain_intermediate.bond_lookup[c1][c2])
+    chain_intermediate.bond_lookup[c1][c2].make_double()
 
     # Make bond between removed hydroxyl group and hydrogen atom to form water
     next_bond_nr = chain_intermediate.find_next_bond_nr()
     chain_intermediate.make_bond(hydrogen, o_oh, next_bond_nr)
 
     # Remove separate water structure from the Structure object
-    one, two = chain_intermediate.split_disconnected_structures()
-    if len(one.graph) == 3:
-        water = one
-        chain_intermediate = two
+    structure_1, structure_2 = chain_intermediate.split_disconnected_structures()
+    if c1 in structure_1.graph:
+        chain_intermediate = structure_1
     else:
-        water = two
-        chain_intermediate = one
+        chain_intermediate = structure_2
 
-    # After double bond formation, remove chirality c1 and c2
-    for atom in chain_intermediate.graph:
-        if atom == c1:
-            atom.chiral = None
-        elif atom == c2:
-            atom.chiral = None
-
-    # Add colouring
-    for atom in chain_intermediate.graph:
-        if atom == c1:
-            for bond in atom.bonds:
-                for neighbour in bond.neighbours:
-                    if neighbour == c2:
-                        the_bond = bond
-    for atom in the_bond.neighbours:
-        atom.draw.colour = 'blue'
-    for atom in chain_intermediate.graph:
-        if atom == c2:
-            for bond in atom.bonds:
-                for neighbour in bond.neighbours:
-                    if neighbour == c1:
-                        the_bond = bond
-    for atom in the_bond.neighbours:
-        atom.draw.colour = 'blue'
-
-    #Refresh structure :)
-    for atom in chain_intermediate.graph:
-        atom.get_connectivity()
-    chain_intermediate.set_atom_neighbours()
-    chain_intermediate.set_connectivities()
-    chain_intermediate.find_cycles()
-    for bond_nr, bond in chain_intermediate.bonds.items():
-        bond.set_bond_summary()
+    chain_intermediate.refresh_structure()
 
     return chain_intermediate

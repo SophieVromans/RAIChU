@@ -72,7 +72,6 @@ class PksStarterSubstrate(Enum):
     LACTYL_COA=27
     PHENYLACETYLCOA=28
     METHOXYFORMYL_COA=29
-    GLYCERYL_COA=30
 
     @staticmethod
     def from_string(label: str):

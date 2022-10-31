@@ -184,9 +184,14 @@ if __name__ == "__main__":
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'KS',
-                                                                                     "ALPHA_OH", None, True,
+                                                                                     "BETA_D_OME", None, True,
                                                                                      True),
-
+                                                                DomainRepresentation("gene 1", 'KR', "A1", None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ER', None, None, True,
+                                                                                     True),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
@@ -198,7 +203,19 @@ if __name__ == "__main__":
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
-
+                                          ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
+                                                               [DomainRepresentation("gene 1", 'KS',
+                                                                                     "BETA_ME", None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'KR', "A1", None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ER', None, None, True,
+                                                                                     True),
+                                                                DomainRepresentation("gene 1", 'ACP', None, None, True,
+                                                                                     True)
+                                                                ]),
                                           ModuleRepresentation("NRPS", None, "tyrosine",
                                                                [DomainRepresentation("gene 1", 'C', None, None, True,
                                                                                      True),

@@ -10,6 +10,7 @@ from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
 
 
+
 @unique
 class ModuleType(Enum):
     NRPS = 1
@@ -279,6 +280,12 @@ class TransATPKSModule(_Module):
         dh_domain = self.get_tailoring_domain("DH")
         if not dh_domain:
             dh_domain = self.get_tailoring_domain("DUMMY_DH")
+        edh_domain = self.get_tailoring_domain("EDH")
+        if not edh_domain:
+            edh_domain = self.get_tailoring_domain("DUMMY_EDH")
+        zdh_domain = self.get_tailoring_domain("ZDH")
+        if not zdh_domain:
+            zdh_domain = self.get_tailoring_domain("DUMMY_ZDH")
         er_domain = self.get_tailoring_domain("ER")
         if not er_domain:
             er_domain = self.get_tailoring_domain("DUMMY_ER")
@@ -297,6 +304,12 @@ class TransATPKSModule(_Module):
         gdh_domain = self.get_tailoring_domain("GDH")
         if not gdh_domain:
             gdh_domain = self.get_tailoring_domain("DUMMY_GDH")
+        zgdh_domain = self.get_tailoring_domain("ZGDH")
+        if not zgdh_domain:
+            zgdh_domain = self.get_tailoring_domain("DUMMY_ZGDH")
+        egdh_domain = self.get_tailoring_domain("EGDH")
+        if not egdh_domain:
+            egdh_domain = self.get_tailoring_domain("DUMMY_EGDH")
         omt_domain = self.get_tailoring_domain("OMT")
         if not omt_domain:
             omt_domain = self.get_tailoring_domain("DUMMY_OMT")
@@ -317,9 +330,30 @@ class TransATPKSModule(_Module):
                         structure = er_domain.do_tailoring(structure)
                         if bmt_domain and bmt_domain.active and bmt_domain.used:
                                     structure = bmt_domain.do_tailoring(structure)
+                elif edh_domain and edh_domain.active and edh_domain.used:
+                    structure = edh_domain.do_tailoring(structure)
+                    if er_domain and er_domain.active and er_domain.used:
+                        structure = er_domain.do_tailoring(structure)
+                        if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                    structure = bmt_domain.do_tailoring(structure)
+                elif zdh_domain and zdh_domain.active and zdh_domain.used:
+                    structure = zdh_domain.do_tailoring(structure)
+                    if er_domain and er_domain.active and er_domain.used:
+                        structure = er_domain.do_tailoring(structure)
+                        if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                    structure = bmt_domain.do_tailoring(structure)
                 elif gdh_domain and gdh_domain.active and gdh_domain.used:
                     structure = gdh_domain.do_tailoring(structure)
-
+                    if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                    structure = bmt_domain.do_tailoring(structure)
+                elif egdh_domain and egdh_domain.active and egdh_domain.used:
+                    structure = egdh_domain.do_tailoring(structure)
+                    if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                structure = bmt_domain.do_tailoring(structure)
+                elif zgdh_domain and zgdh_domain.active and zgdh_domain.used:
+                    structure = zgdh_domain.do_tailoring(structure)
+                    if bmt_domain and bmt_domain.active and bmt_domain.used:
+                                structure = bmt_domain.do_tailoring(structure)
         if amt_domain and amt_domain.active and amt_domain.used:
             structure = amt_domain.do_tailoring(structure)
         if almt_domain and almt_domain.active and almt_domain.used:

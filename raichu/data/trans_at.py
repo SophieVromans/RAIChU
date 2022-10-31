@@ -1,7 +1,6 @@
 TRANSATOR_CLADE_TO_TAILORING_REACTIONS = {'NON_ELONGATING_DB': [('DUMMY_KR', None), ('DUMMY_DH', None)],
                                           'BETA_OH_KETO': [],
-                                          'NON_ELONGATING_BETA_OH': [('DUMMY_KR', None),
-                                                                                  ('DUMMY_DH', None)],
+                                          'NON_ELONGATING_BETA_OH': [('DUMMY_KR', None)],
                                           'ALPHA_OH': [('DUMMY_AH', None)],
                                           'EDB': [('DUMMY_KR', None), ('DUMMY_EDH', None)],
                                           'ARST': [],
@@ -44,7 +43,8 @@ TRANSATOR_CLADE_TO_TAILORING_REACTIONS = {'NON_ELONGATING_DB': [('DUMMY_KR', Non
                                           'NON_ELONGATING_ALPHAME_EDB': [('DUMMY_AMT', None),
                                                                                       ('DUMMY_KR', None),
                                                                                       ('DUMMY_EDH', None)],
-                                          'RED': [('DUMMY_SC', None)]}
+                                          'RED': [('DUMMY_KR', None), ('DUMMY_DH', None),
+                                                                   ('DUMMY_ER', None)]}
 
 # TODO: Map all these SMILES to names, make Enums for them
 TRANSATOR_CLADE_TO_STARTER_SUBSTRATE = {'NON_ELONGATING_DB': 'ACETYL_COA',

@@ -71,6 +71,10 @@ class TailoringDomain(Domain):
             return ketoreduction(structure, self.subtype)
         elif self.type.name == 'DH' or self.type.name == 'DUMMY_DH':
             return dehydration(structure)
+        elif self.type.name == 'EDH' or self.type.name == 'DUMMY_EDH':
+            return dehydration(structure,"E")
+        elif self.type.name == 'ZDH' or self.type.name == 'DUMMY_ZDH':
+            return dehydration(structure,"Z")
         elif self.type.name == 'ER' or self.type.name == 'DUMMY_ER':
             return enoylreduction(structure, self.subtype)
         elif self.type.name == 'ALMT' or self.type.name == 'DUMMY_ALMT':
@@ -83,6 +87,10 @@ class TailoringDomain(Domain):
             return alpha_hydroxylase(structure)
         elif self.type.name == 'GDH' or self.type.name == 'DUMMY_GDH':
             return gamma_beta_dehydratase(structure)
+        elif self.type.name == 'EGDH' or self.type.name == 'DUMMY_EGDH':
+            return gamma_beta_dehydratase(structure,"E")
+        elif self.type.name == 'ZGDH' or self.type.name == 'DUMMY_ZGDH':
+            return gamma_beta_dehydratase(structure,"Z")
         elif self.type.name == 'OMT' or self.type.name == 'DUMMY_OMT':
             return beta_hydroxy_methyl_transferase(structure)
         elif self.type.name == 'BMT' or self.type.name == 'DUMMY_BMT':

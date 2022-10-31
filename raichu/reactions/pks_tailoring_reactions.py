@@ -20,9 +20,18 @@ RECENT_REDUCTION_C = GroupDefiner('recent_reduction_mal', 'OCCC(=O)S', 2)
 RECENT_REDUCTION_CC = BondDefiner('recent_reduction_C-C', 'OCCC(=O)S', 1, 2)
 RECENT_REDUCTION_CC_SHIFTED = BondDefiner('recent_reduction_C-C_shifted', 'CC(O)CC(S)=O', 0, 1)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
-RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
-RECENT_EONYL_REDUCTION_CC=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,1)
-RECENT_REDUCTION_OH=BondDefiner('recent_reduction_C-H', '[H]OC(C)CC(S)=O', 0, 1)
+RECENT_EONYL_REDUCTION = BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
+RECENT_EONYL_REDUCTION_CC = BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,1)
+RECENT_REDUCTION_OH = BondDefiner('recent_reduction_C-H', '[H]OC(C)CC(S)=O', 0, 1)
+RECENT_REDUCTION_TOP_C = GroupDefiner('recent_reduction_top_c', '[H]C(C)=C([H])C(S)=O', 5)
+RECENT_REDUCTION_TOP_H = GroupDefiner('recent_reduction_top_h', '[H]C(C)=C([H])C(S)=O', 4)
+RECENT_REDUCTION_TOP_METHYL = GroupDefiner('recent_reduction_top_methyl', '[H]\C(C)=C(\C)C(S)=O', 4)
+RECENT_REDUCTION_BOTTOM_C = GroupDefiner('recent_reduction_bottom_c', '[H]C(C)=C([H])C(S)=O', 2)
+RECENT_REDUCTION_BOTTOM_H = GroupDefiner('recent_reduction_bottom_h', '[H]C(C)=C([H])C(S)=O', 0)
+RECENT_REDUCTION_SHIFTED_TOP_C = GroupDefiner('recent_reduction_shifted_top_c', '[H]\C(C)=C(\[H])CC(S)=O', 5)
+RECENT_REDUCTION_SHIFTED_TOP_H = GroupDefiner('recent_reduction_shifted_top_h', '[H]\C(C)=C(\[H])CC(S)=O', 4)
+RECENT_REDUCTION_SHIFTED_BOTTOM_C = GroupDefiner('recent_reduction_shifted_bottom_c', '[H]\C(C)=C(\[H])CC(S)=O', 2)
+RECENT_REDUCTION_SHIFTED_BOTTOM_H = GroupDefiner('recent_reduction_shifted_bottom_h', '[H]\C(C)=C(\[H])CC(S)=O', 0)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
 ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
 ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
@@ -187,7 +196,7 @@ def ketoreduction(chain_intermediate: Structure, kr_type: KRDomainSubtype) -> Tu
     return chain_intermediate, True
 
 
-def dehydration(chain_intermediate: Structure) -> Tuple[Structure, bool]:
+def dehydration(chain_intermediate: Structure, chirality = None) -> Tuple[Structure, bool]:
     """
     Performs the dehydratase reaction on the PKS chain intermediate, returns
     the reaction product as a PIKAChU Structure object
@@ -246,8 +255,8 @@ def dehydration(chain_intermediate: Structure) -> Tuple[Structure, bool]:
     c1 = chain_intermediate.get_atom(c1)
 
     # Make double c1=c2 bond
-    chain_intermediate.bond_lookup[c1][c2].make_double()
-
+    double_bond = chain_intermediate.bond_lookup[c1][c2]
+    double_bond.make_double()
     # Make bond between removed hydroxyl group and hydrogen atom to form water
     next_bond_nr = chain_intermediate.find_next_bond_nr()
     chain_intermediate.make_bond(hydrogen, o_oh, next_bond_nr)
@@ -260,7 +269,23 @@ def dehydration(chain_intermediate: Structure) -> Tuple[Structure, bool]:
         chain_intermediate = structure_2
 
     chain_intermediate.refresh_structure()
-
+    double_bond=chain_intermediate.bond_lookup[c1][c2]
+    #implement stereochemistry
+    if chirality:
+        main_chain_top_c = find_atoms(RECENT_REDUCTION_TOP_C,chain_intermediate)[0]
+        main_chain_bottom_c = find_atoms(RECENT_REDUCTION_BOTTOM_C,chain_intermediate)[0]
+        main_chain_top_h = find_atoms(RECENT_REDUCTION_TOP_H,chain_intermediate)
+        if not main_chain_top_h:
+            main_chain_top_h = find_atoms(RECENT_REDUCTION_TOP_METHYL,chain_intermediate)[0]
+        else:
+            main_chain_top_h=main_chain_top_h[0]
+        main_chain_bottom_h = find_atoms(RECENT_REDUCTION_BOTTOM_H,chain_intermediate)[0]
+        if chirality=="E":
+            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'trans',main_chain_top_h:'cis'},main_chain_bottom_h:{main_chain_top_c:'cis',main_chain_top_h:'trans'}}
+        if chirality=="Z":
+            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
+    chain_intermediate.refresh_structure()
+    #chain_intermediate.set_connectivities()
     return chain_intermediate, True
 
 
@@ -418,7 +443,9 @@ def smallest_cyclisation(structure: Structure) -> Structure:
     #reduce Ketogroup first
     structure=ketoreduction(structure, KRDomainSubtype(1))
     oh_bond=find_OH_two_modules_upstream(structure)
-    assert len(oh_bond)>0, "No hydroxy group two modules upstream availiable"
+    if len(oh_bond)>0:
+        print("No hydroxy group two modules upstream availiable")
+        return structure
     oh_bond=oh_bond[0]
     h_bond=find_bonds(RECENT_REDUCTION_OH, structure)[0]
     structure=internal_condensation(structure, oh_bond, h_bond)[0]
@@ -514,16 +541,16 @@ def alpha_L_methyl_transferase(structure: Structure) -> Structure:
     else:
         alpha_c.chiral = 'counterclockwise'
     structure.refresh_structure()
-    alpha_c=structure.get_atom(alpha_c)
     return structure
 
-def gamma_beta_dehydratase(chain_intermediate: Structure) -> Structure:
+def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> Structure:
     """
     Performs the dehydratase reaction on the PKS chain intermediate wuth shifted double bonds, returns
     the reaction product as a PIKAChU Structure object
 
     chain_intermediate: PIKAChU Structure object, PKS chain intermediate where
     the beta ketone group has been recently reduced by the KR domain
+    subtype: E or Z, depending on chirality, if none, no chirality specified
     """
     # Find and define the atoms that participate in the bond changes
     co_bonds = find_bonds(RECENT_REDUCTION_COH, chain_intermediate)
@@ -575,7 +602,8 @@ def gamma_beta_dehydratase(chain_intermediate: Structure) -> Structure:
     c1 = chain_intermediate.get_atom(c1)
 
     # Make double c1=c2 bond
-    chain_intermediate.bond_lookup[c1][c2].make_double()
+    double_bond = chain_intermediate.bond_lookup[c1][c2]
+    double_bond.make_double()
 
     # Make bond between removed hydroxyl group and hydrogen atom to form water
     next_bond_nr = chain_intermediate.find_next_bond_nr()
@@ -590,4 +618,19 @@ def gamma_beta_dehydratase(chain_intermediate: Structure) -> Structure:
 
     chain_intermediate.refresh_structure()
 
+    #implement stereochemistry
+    if chirality:
+        main_chain_top_c = find_atoms(RECENT_REDUCTION_SHIFTED_TOP_C,chain_intermediate)[0]
+        main_chain_bottom_c = find_atoms(RECENT_REDUCTION_SHIFTED_BOTTOM_C,chain_intermediate)[0]
+        main_chain_top_h = find_atoms(RECENT_REDUCTION_SHIFTED_TOP_H,chain_intermediate)
+        if not main_chain_top_h:
+            main_chain_top_h = find_atoms(RECENT_REDUCTION_SHIFTED_TOP_METHYL,chain_intermediate)[0]
+        else:
+            main_chain_top_h=main_chain_top_h[0]
+        main_chain_bottom_h = find_atoms(RECENT_REDUCTION_SHIFTED_BOTTOM_H,chain_intermediate)[0]
+        if chirality=="E":
+            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'trans',main_chain_top_h:'cis'},main_chain_bottom_h:{main_chain_top_c:'cis',main_chain_top_h:'trans'}}
+        if chirality=="Z":
+            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
+    chain_intermediate.refresh_structure()
     return chain_intermediate

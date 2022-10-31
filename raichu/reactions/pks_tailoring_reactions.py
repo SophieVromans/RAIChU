@@ -22,7 +22,7 @@ RECENT_REDUCTION_CC_SHIFTED = BondDefiner('recent_reduction_C-C_shifted', 'CC(O)
 RECENT_DEHYDRATION = BondDefiner('recent_dehydration', 'SC(C=CC)=O', 2, 3)
 RECENT_EONYL_REDUCTION=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,3)
 RECENT_EONYL_REDUCTION_CC=BondDefiner('recent_eonyl_reduction',"CCCC(S)=O",2,1)
-RECENT_REDUCTION_CH=BondDefiner('recent_reduction_C-H', '[H]C(C)(O)CC(S)=O', 0, 1)
+RECENT_REDUCTION_OH=BondDefiner('recent_reduction_C-H', '[H]OC(C)CC(S)=O', 0, 1)
 S_KR = GroupDefiner('C1 atom before KR reaction', 'SC(C)=O', 0)
 ER_MMAL_CARBON = GroupDefiner('Chiral carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 3)
 ER_S_CARBON = GroupDefiner('S-carbon atom after enoylreduction of mmal', 'SC(=O)C(C)CC', 1)
@@ -420,7 +420,7 @@ def smallest_cyclisation(structure: Structure) -> Structure:
     oh_bond=find_OH_two_modules_upstream(structure)
     assert len(oh_bond)>0, "No hydroxy group two modules upstream availiable"
     oh_bond=oh_bond[0]
-    h_bond=find_bonds(RECENT_REDUCTION_CH, structure)[0]
+    h_bond=find_bonds(RECENT_REDUCTION_OH, structure)[0]
     structure=internal_condensation(structure, oh_bond, h_bond)[0]
     return structure
 
@@ -484,6 +484,7 @@ def alpha_L_methyl_transferase(structure: Structure) -> Structure:
     #find atom to add methylgroup
     alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
     structure=methylation(alpha_c,structure)
+    alpha_c=structure.get_atom(alpha_c)
     structure.refresh_structure()
     h_atom = alpha_c.get_neighbour('H')
     c_atoms = alpha_c.get_neighbours('C')
@@ -506,16 +507,14 @@ def alpha_L_methyl_transferase(structure: Structure) -> Structure:
 
     # Set the chirality of the carbonyl carbon
 
-    counterclockwise_order = [h_atom, methyl_c, top_c, bottom_c]
+    counterclockwise_order = [h_atom, methyl_c, bottom_c, top_c]
 
     if same_chirality(counterclockwise_order, alpha_c.neighbours):
         alpha_c.chiral = 'clockwise'
     else:
         alpha_c.chiral = 'counterclockwise'
-    alpha_c.chirality="counterclockwise"
-    initialise_atom_attributes(structure)
     structure.refresh_structure()
-
+    alpha_c=structure.get_atom(alpha_c)
     return structure
 
 def gamma_beta_dehydratase(chain_intermediate: Structure) -> Structure:

@@ -941,6 +941,7 @@ class RaichuDrawer(Drawer):
                     if atom1.draw.position.x > backbone_atoms[i - 2].draw.position.x:
                         first_atom_cycle = None
                         for next_atom in atom1.neighbours:
+                            print(next_atom, next_atom.type)
                             if next_atom.type != 'H' and next_atom not in backbone_atoms:
                                 first_atom_cycle = next_atom
                         assert first_atom_cycle

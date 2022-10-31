@@ -8,7 +8,6 @@ from raichu.domain.domain import Domain, TailoringDomain, RecognitionDomain, \
 from raichu.central_chain_detection.label_central_chain import label_pk_central_chain, label_nrp_central_chain
 from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
-from raichu.drawing.drawer import RaichuDrawer
 
 
 @unique
@@ -323,7 +322,6 @@ class TransATPKSModule(_Module):
 
         if amt_domain and amt_domain.active and amt_domain.used:
             structure = amt_domain.do_tailoring(structure)
-        #RaichuDrawer(structure).draw_structure()
         if almt_domain and almt_domain.active and almt_domain.used:
                     structure = almt_domain.do_tailoring(structure)
         if sc_domain and sc_domain.active and sc_domain.used:
@@ -360,5 +358,4 @@ class NRPSModule(_Module):
             structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
 
         structure = self.do_nrps_tailoring(structure)
-        RaichuDrawer(structure).draw_structure()
         return structure

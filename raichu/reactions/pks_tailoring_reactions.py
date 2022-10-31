@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from pikachu.reactions.functional_groups import BondDefiner, GroupDefiner, find_atoms, find_bonds, combine_structures
 from pikachu.reactions.basic_reactions import condensation, hydrolysis, internal_condensation
 from pikachu.chem.chirality import same_chirality
@@ -351,8 +353,10 @@ def enoylreduction(chain_intermediate: Structure, er_subtype: ERDomainSubtype) -
             else:
                 raise ValueError(f"RAIChU does not support ER domain subtype {er_subtype.name}")
 
-    return chain_intermediate
-#trans-AT-PKS tailoringReactions
+    return chain_intermediate, True
+
+
+#trans-AT-PKS tailoring reactions
 def hydroxylation(target_atom, structure: Structure) -> Structure:
     """
     Returns the hydroxylated structure thats hydroxylated at the target atom.
@@ -434,25 +438,25 @@ def find_OH_two_modules_upstream(structure: Structure):
         bonds= find_bonds(HYDROXYL_GROUP_TWO_MODULES_UPSTREAM_BETA_WITH_DOUBLE_BOND_SHIFTED,structure)
     return bonds
 
-def smallest_cyclisation(structure: Structure) -> Structure:
+def smallest_cyclisation(structure: Structure) -> Tuple[Structure, bool]:
     """
     Cyclises with the OH group two modules upstream to the smalles possible ring
 
     structure: PIKAChU Structure object
     """
     #reduce Ketogroup first
-    structure=ketoreduction(structure, KRDomainSubtype(1))
-    oh_bond=find_OH_two_modules_upstream(structure)
-    if len(oh_bond)>0:
+    structure_oh=ketoreduction(structure, KRDomainSubtype(1))
+    oh_bond=find_OH_two_modules_upstream(structure_oh)
+    if not oh_bond:
         print("No hydroxy group two modules upstream availiable")
-        return structure
+        return structure, False
     oh_bond=oh_bond[0]
-    h_bond=find_bonds(RECENT_REDUCTION_OH, structure)[0]
-    structure=internal_condensation(structure, oh_bond, h_bond)[0]
-    return structure
+    h_bond=find_bonds(RECENT_REDUCTION_OH, structure_oh)[0]
+    structure_oh=internal_condensation(structure_oh, oh_bond, h_bond)[0]
+    return structure_oh, True
 
 
-def alpha_methyl_transferase(structure: Structure) -> Structure:
+def alpha_methyl_transferase(structure: Structure) -> Tuple[Structure, bool]:
     """
     Returns the structure thats methylated at the alpha-c.
 
@@ -460,11 +464,17 @@ def alpha_methyl_transferase(structure: Structure) -> Structure:
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
-    structure=methylation(alpha_c,structure)
-    return structure
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)
+    if alpha_c:
+        if alpha_c[0].has_neighbour("H"):
+            structure=methylation(alpha_c[0],structure)
+            return structure, True
+        else:
+            return structure, False
+    else:
+        return structure, False
 
-def beta_methyl_transferase(structure: Structure) -> Structure:
+def beta_methyl_transferase(structure: Structure) -> Tuple[Structure, bool]:
     """
     Returns the structure thats methylated at the beta-c.
 
@@ -472,11 +482,17 @@ def beta_methyl_transferase(structure: Structure) -> Structure:
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    beta_c=find_atoms(RECENT_BETA_C, structure)[0]
-    structure=methylation(beta_c,structure)
-    return structure
+    beta_c=find_atoms(RECENT_BETA_C, structure)
+    if beta_c:
+        if beta_c[0].has_neighbour("H"):
+            structure=methylation(beta_c[0],structure)
+            return structure, True
+        else:
+            return structure, False
+    else:
+        return structure, False
 
-def beta_hydroxy_methyl_transferase(structure: Structure) -> Structure:
+def beta_hydroxy_methyl_transferase(structure: Structure) -> Tuple[Structure, bool]:
     """
     Returns the structure thats methylated at the beta-oh-goup.
 
@@ -485,11 +501,17 @@ def beta_hydroxy_methyl_transferase(structure: Structure) -> Structure:
     """
     #find atom to add methylgroup
 
-    beta_c_oh=find_atoms(RECENT_BETA_C_OH, structure)[0]
-    structure=methylation(beta_c_oh,structure)
-    return structure
+    beta_c_oh=find_atoms(RECENT_BETA_C_OH, structure)
+    if beta_c_oh:
+        if beta_c_oh[0].has_neighbour("H"):
+            structure=methylation(beta_c_oh[0],structure)
+            return structure, True
+        else:
+            return structure, False
+    else:
+        return structure, False
 
-def alpha_hydroxylase(structure: Structure) -> Structure:
+def alpha_hydroxylase(structure: Structure) -> Tuple[Structure, bool]:
     """
     Returns the structure thats hydroxylated at the alpha-c.
 
@@ -497,11 +519,17 @@ def alpha_hydroxylase(structure: Structure) -> Structure:
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
-    structure=hydroxylation(alpha_c,structure)
-    return structure
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)
+    if alpha_c:
+        if alpha_c[0].has_neighbour("H"):
+            structure=hydroxylation(alpha_c[0],structure)
+            return structure, True
+        else:
+            return structure, False
+    else:
+        return structure, False
 
-def alpha_L_methyl_transferase(structure: Structure) -> Structure:
+def alpha_L_methyl_transferase(structure: Structure) -> Tuple[Structure, bool]:
     """
     Returns the structure thats methylated at the alpha- c in L configuration.
 
@@ -509,41 +537,51 @@ def alpha_L_methyl_transferase(structure: Structure) -> Structure:
     target_atom:  PIKAChU atom object
     """
     #find atom to add methylgroup
-    alpha_c=find_atoms(RECENT_ALPHA_C, structure)[0]
-    structure=methylation(alpha_c,structure)
-    alpha_c=structure.get_atom(alpha_c)
-    structure.refresh_structure()
-    h_atom = alpha_c.get_neighbour('H')
-    c_atoms = alpha_c.get_neighbours('C')
+    alpha_c=find_atoms(RECENT_ALPHA_C, structure)
+    if alpha_c:
+        if alpha_c[0].has_neighbour("H"):
+            structure=methylation(alpha_c[0],structure)
+            alpha_c=alpha_c[0]
+            structure.refresh_structure()
+            h_atom = alpha_c.get_neighbour('H')
+            c_atoms = alpha_c.get_neighbours('C')
 
-    # Define the two carbons adjacent to the carbonyl atom as 'top_c' and 'bottom_c'
-    methyl_c = find_atoms(RECENT_ALPHA_METHYL_C, structure)[0]
-    assert methyl_c
-    top_cs = find_atoms(FIRST_C, structure)
-    assert len(top_cs) == 1
+            # Define the two carbons adjacent to the carbonyl atom as 'top_c' and 'bottom_c'
+            methyl_c = find_atoms(RECENT_ALPHA_METHYL_C, structure)[0]
+            if not methyl_c:
+                return structure, False
+            top_cs = find_atoms(FIRST_C, structure)
 
-    top_c = top_cs[0]
-    assert top_c in c_atoms
+            if not len(top_cs) == 1:
+                return structure, False
+            top_c = top_cs[0]
+            if not top_c in c_atoms:
+                return structure, False
 
-    bottom_c = None
-    for atom in c_atoms:
-        if atom != top_c and atom != methyl_c:
-            bottom_c = atom
+            bottom_c = None
+            for atom in c_atoms:
+                if atom != top_c and atom != methyl_c:
+                    bottom_c = atom
 
-    assert bottom_c
+            if not bottom_c:
+                return structure, False
 
-    # Set the chirality of the carbonyl carbon
+            # Set the chirality of the carbonyl carbon
 
-    counterclockwise_order = [h_atom, methyl_c, bottom_c, top_c]
+            counterclockwise_order = [h_atom, methyl_c, bottom_c, top_c]
 
-    if same_chirality(counterclockwise_order, alpha_c.neighbours):
-        alpha_c.chiral = 'clockwise'
+            if same_chirality(counterclockwise_order, alpha_c.neighbours):
+                alpha_c.chiral = 'clockwise'
+            else:
+                alpha_c.chiral = 'counterclockwise'
+            structure.refresh_structure()
+            return structure, True
+        else:
+            return structure, False
     else:
-        alpha_c.chiral = 'counterclockwise'
-    structure.refresh_structure()
-    return structure
+        return structure, False
 
-def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> Structure:
+def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> Tuple[Structure, bool]:
     """
     Performs the dehydratase reaction on the PKS chain intermediate wuth shifted double bonds, returns
     the reaction product as a PIKAChU Structure object
@@ -558,7 +596,7 @@ def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> S
     cc_bonds = find_bonds(RECENT_REDUCTION_CC_SHIFTED, chain_intermediate)
 
     if not len(co_bonds) == 1 or not len(cc_bonds) == 1:
-        return chain_intermediate
+        return chain_intermediate, False
 
     c1 = None
     c2 = None
@@ -634,4 +672,4 @@ def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> S
         if chirality=="Z":
             double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
     chain_intermediate.refresh_structure()
-    return chain_intermediate
+    return chain_intermediate, True

@@ -548,6 +548,7 @@ def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> S
     Performs the dehydratase reaction on the PKS chain intermediate wuth shifted double bonds, returns
     the reaction product as a PIKAChU Structure object
 
+
     chain_intermediate: PIKAChU Structure object, PKS chain intermediate where
     the beta ketone group has been recently reduced by the KR domain
     subtype: E or Z, depending on chirality, if none, no chirality specified

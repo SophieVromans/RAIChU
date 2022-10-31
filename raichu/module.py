@@ -8,7 +8,8 @@ from raichu.domain.domain import Domain, TailoringDomain, RecognitionDomain, \
 from raichu.central_chain_detection.label_central_chain import label_pk_central_chain, label_nrp_central_chain
 from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
-
+from pikachu.drawing.drawing import Drawer
+from raichu.drawing.drawer import RaichuDrawer
 
 
 @unique
@@ -472,6 +473,9 @@ class TransATPKSModule(_Module):
                     structure, ah_tailored = ah_domain.do_tailoring(structure)
                     if not ah_tailored:
                         ah_domain.used=False
+        drawer = Drawer(structure)
+        drawer.show_molecule()
+        RaichuDrawer(structure).draw_structure()
         return structure
 
     def run_module(self, structure: Union[Structure, None] = None) -> Structure:

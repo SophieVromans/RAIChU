@@ -286,7 +286,8 @@ def dehydration(chain_intermediate: Structure, chirality = None) -> Tuple[Struct
         if chirality=="E":
             double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'trans',main_chain_top_h:'cis'},main_chain_bottom_h:{main_chain_top_c:'cis',main_chain_top_h:'trans'}}
         if chirality=="Z":
-            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
+            double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_top_h:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
+        double_bond.chiral = True
     chain_intermediate.refresh_structure()
     #chain_intermediate.set_connectivities()
     return chain_intermediate, True
@@ -672,5 +673,6 @@ def gamma_beta_dehydratase(chain_intermediate: Structure, chirality = None) -> T
             double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'trans',main_chain_top_h:'cis'},main_chain_bottom_h:{main_chain_top_c:'cis',main_chain_top_h:'trans'}}
         if chirality=="Z":
             double_bond.chiral_dict={main_chain_top_c:{main_chain_bottom_c:'trans',main_chain_bottom_h:'cis'},main_chain_top_h:{main_chain_bottom_c:'cis',main_chain_bottom_h:'trans'},main_chain_bottom_c:{main_chain_top_c:'cis',main_chain_top_h:'trans'},main_chain_bottom_h:{main_chain_top_c:'trans',main_chain_top_h:'cis'}}
+        double_bond.chiral = True
     chain_intermediate.refresh_structure()
     return chain_intermediate, True

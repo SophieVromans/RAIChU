@@ -149,18 +149,21 @@ if __name__ == "__main__":
                                                                 ]),
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", "KS",
-                                                                                     'ARST', None, True,
+                                                                                     None, None, True,
                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'AT', None, None, True,
                                                                                      True),
-
+                                                                 DomainRepresentation("gene 1", 'KR', 'A1', None, True,
+                                                                                      True),
+                                                                 DomainRepresentation("gene 1", 'DH', None, None, True,
+                                                                                      True),
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,
                                                                                      True)
                                                                 ]),
 
                                           ModuleRepresentation("PKS", "PKS_TRANS", "MALONYL_COA",
                                                                [DomainRepresentation("gene 1", 'KS',
-                                                                                     "ALPHAME_BETA_D_OH", None, True,
+                                                                                     None, None, True,
                                                                                      True),
 
                                                                 DomainRepresentation("gene 1", 'ACP', None, None, True,

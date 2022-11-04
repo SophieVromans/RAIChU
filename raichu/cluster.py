@@ -34,26 +34,27 @@ class Cluster:
                     next_module = self.modules[i + 1]
                     if next_module.type.name == "PKS":
                         if module.is_starter_module and next_module.subtype.name == "PKS_TRANS":
-                            substrate_name = TRANSATOR_CLADE_TO_STARTER_SUBSTRATE.get(next_module.synthesis_domain.subtype.name)
-                            if substrate_name is not None:
-                                substrate = PKSSubstrate(substrate_name)
+                            if next_module.synthesis_domain.subtype:
+                                substrate_name = TRANSATOR_CLADE_TO_STARTER_SUBSTRATE.get(next_module.synthesis_domain.subtype.name)
+                                if substrate_name is not None:
+                                    substrate = PKSSubstrate(substrate_name)
+                                else:
+                                    substrate = PKSSubstrate("ACETYL_COA")
                             else:
                                 substrate = PKSSubstrate("ACETYL_COA")
                                 # TODO: Transfer names of substrates to a dictionary in raichu.substrate
                         elif module.is_starter_module:
                             substrate = PKSSubstrate("ACETYL_COA")
-                        if not module.is_termination_module and next_module.subtype.name == "PKS_TRANS":
+                        if not module.is_termination_module and next_module.subtype.name == "PKS_TRANS" and next_module.synthesis_domain.subtype:
                             # Ignore tailoring domains in the module itself
-                            # Why do we do this if we delete them afterwards anyways?
-                            for domain in module.tailoring_domains:
-                                domain.used = False
                             module.tailoring_domains = []
                             for dummy_domain_type, dummy_domain_subtype in TRANSATOR_CLADE_TO_TAILORING_REACTIONS[next_module.synthesis_domain.subtype.name]:
                                 self.modules[i].tailoring_domains.append(TailoringDomain(dummy_domain_type,
                                                                                          dummy_domain_subtype))
                 if module.synthesis_domain:
-                    if TRANSATOR_CLADE_TO_ELONGATING[module.synthesis_domain.subtype.name]==False:
-                        self.modules[i].synthesis_domain.is_elongating==False
+                    if module.synthesis_domain.subtype:
+                        if TRANSATOR_CLADE_TO_ELONGATING[module.synthesis_domain.subtype.name]==False:
+                            self.modules[i].synthesis_domain.is_elongating==False
                 self.modules[i].recognition_domain.substrate = substrate
 
     def compute_structures(self, compute_cyclic_products=True):

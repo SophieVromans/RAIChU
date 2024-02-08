@@ -12,6 +12,7 @@ from raichu.attach_to_domain import attach_to_domain_pk, attach_to_domain_nrp
 from enum import Enum, unique
 from raichu.substrate import PKSSubstrate
 
+
 @unique
 class ModuleType(Enum):
     NRPS = 1

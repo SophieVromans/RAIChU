@@ -7,6 +7,7 @@ from pikachu.general import read_smiles
 POLYKETIDE_S = GroupDefiner('Sulphur atom polyketide', 'SC(C)=O', 0)
 POLYKETIDE_S_INSERTED_O = GroupDefiner(
     'Sulphur atom polyketide inserted O', 'SC(O)=O', 0)
+POLYKETIDE_S_REDUCED_STARTER = GroupDefiner('Sulphur atom polyketide reduced O', 'SC(C)O', 0)
 NRP_C = GroupDefiner('C atom to attach to PCP domain', 'NCC(O)=O', 2)
 RIPP_N = GroupDefiner('N atom to attach to leader', 'NCC=O', 0)
 AMINO_ACID_BACKBONE = read_smiles('NCC(=O)O')
@@ -103,6 +104,7 @@ def condensation_with_reverse_numbering(structure_1, structure_2, oh_bond, h_bon
 
     return [product, water]
 
+
 def attach_to_domain_pk(polyketide):
     """
     Attaches the sulphur atom in the input polyketide to a PKS domain and
@@ -123,6 +125,8 @@ def attach_to_domain_pk(polyketide):
     if len(locations_sulphur) == 0:
         locations_sulphur = find_atoms(
             POLYKETIDE_S_INSERTED_O, polyketide)
+        if len(locations_sulphur) == 0:
+            locations_sulphur = find_atoms(POLYKETIDE_S_REDUCED_STARTER, polyketide)
     assert len(locations_sulphur) == 1
     sulphur_2 = locations_sulphur[0]
     carbon = sulphur_2.get_neighbour('C')

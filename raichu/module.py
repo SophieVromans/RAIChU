@@ -281,9 +281,7 @@ class LinearPKSModule(_Module):
             if self.recognition_domain:
                 if structure is None:
                     assert self.is_starter_module
-                    starter_unit = read_smiles(self.recognition_domain.substrate.smiles)
-                    label_pk_central_chain(starter_unit)
-                    structure = attach_to_domain_pk(starter_unit)
+                    structure = self.recognition_domain.substrate.starter_monomer.attach_to_acp()
                 else:
                     structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
 
@@ -307,10 +305,7 @@ class IterativePKSModule(_Module):
                     substrate = PKSSubstrate(self.recognition_domain.substrate_name)
                     if structure is None:
                         assert self.is_starter_module
-                        starter_unit = read_smiles(
-                            substrate.smiles)
-                        label_pk_central_chain(starter_unit)
-                        structure = attach_to_domain_pk(starter_unit)
+                        structure = substrate.starter_monomer.attach_to_acp()
                     else:
                         structure = self.synthesis_domain.do_elongation(
                             structure, substrate)
@@ -500,10 +495,8 @@ class TransATPKSModule(_Module):
         else:
             if self.recognition_domain:
                 if structure is None:
-                        assert self.is_starter_module
-                        starter_unit = read_smiles(self.recognition_domain.substrate.smiles)
-                        label_pk_central_chain(starter_unit)
-                        structure = attach_to_domain_pk(starter_unit)
+                    assert self.is_starter_module
+                    structure = self.recognition_domain.substrate.starter_monomer.attach_to_acp()
                 else:
                     structure = self.synthesis_domain.do_elongation(structure, self.recognition_domain.substrate)
                 structure = self.do_pks_tailoring(structure)

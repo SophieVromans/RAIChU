@@ -6,6 +6,7 @@ from raichu.representations import ClusterRepresentation, ModuleRepresentation, 
 from paras.features import _METADATA
 from raichu.substrate import PksStarterSubstrate, PksElongationSubstrate
 from raichu.domain.domain_types import KRDomainSubtype, ERDomainSubtype
+import traceback
 
 
 PROTEINOGENIC_AA = ['alanine',
@@ -162,8 +163,11 @@ def generate_nrps_module(gene_nr, module_nr, terminal_module=False):
 
     unknown_domains = []
 
-    if module_nr == 0 and not has_proteinogenic_substrate:
-        substrate = random.choice(PROTEINOGENIC_AA)
+    if module_nr == 0:
+        if has_proteinogenic_substrate:
+            substrate = random.choice(PROTEINOGENIC_AA)
+        else:
+            substrate = random.choice(AA_STARTER_CHOICES)
 
     else:
         c_domain, gene_nr = generate_domain(gene_nr, "C")
@@ -188,7 +192,7 @@ def generate_nrps_module(gene_nr, module_nr, terminal_module=False):
     if has_cyc:
         has_ox = choose(1, 1)
 
-    if cyc_domain:
+    if has_cyc:
         cyc_domain, gene_nr = generate_domain(gene_nr, "CYC")
 
     a_domain, gene_nr = generate_domain(gene_nr, "A")
@@ -268,8 +272,9 @@ def generate_modular_cluster(nr_modules, drawing_dir, failed_dir, cluster_nr, ci
         drawing_out = os.path.join(drawing_dir, f"cluster_{cluster_nr}.svg")
         draw_cluster(cluster, drawing_out)
 
-    except Exception as e:
-        print(e)
+    except Exception:
+        print(cluster.modules[0].substrate)
+        print(traceback.format_exc())
         failed_out = os.path.join(failed_dir, f"cluster_{cluster_nr}")
         cluster.write_cluster(failed_out)
 
@@ -288,6 +293,7 @@ def generate_random_clusters(nr_clusters, out_folder, nrps=True, cis_pks=True):
 
     for i in range(nr_clusters):
         nr_modules = random.randint(2, 13)
+        print(f"Drawing cluster {i + 1}")
         generate_modular_cluster(nr_modules, drawing_dir, failed_dir, i + 1, nrps=nrps, cis_pks=cis_pks)
 
 

@@ -1,11 +1,14 @@
 from pikachu.reactions.functional_groups import GroupDefiner, find_atoms, find_bonds
 from raichu.reactions.general import initialise_atom_attributes
+
+import timeout_decorator
 from raichu.data.molecular_moieties import AMINO_FATTY_ACID, AMINO_ACID_BACKBONE, N_AMINO_ACID, C1_AMINO_ACID, \
     C2_AMINO_ACID, BETA_AMINO_ACID_BACKBONE, B_N_AMINO_ACID, B_C1_AMINO_ACID, B_C2_AMINO_ACID, B_C3_AMINO_ACID, \
     B_LEAVING_BOND, ACID_C1, OH_AMINO_ACID, N_AMINO_ACID_ATTACHED, C1_AMINO_ACID_ATTACHED, C2_AMINO_ACID_ATTACHED
 
 POLYKETIDE_S = GroupDefiner('Sulphur atom polyketide', 'SC(C)=O', 0)
 POLYKETIDE_S_INSERTED_O = GroupDefiner('Sulphur atom polyketide inserted O', 'SC(O)=O', 0)
+POLYKETIDE_S_REDUCED_STARTER = GroupDefiner('Sulphur atom polyketide', 'SC(C)O', 0)
 
 
 class CentralChain:
@@ -35,6 +38,7 @@ class RippCentralChain(CentralChain):
         super().__init__(structure, chain_type='ripp')
 
 
+@timeout_decorator.timeout(3)
 def label_pk_central_chain(pk_starter_unit):
     """Finds the the atoms in the central chain of the polyketide starter unit,
     sets the in_central_chain Atom object attribute to True/False accordingly,
@@ -51,6 +55,8 @@ def label_pk_central_chain(pk_starter_unit):
     locations_sulphur = find_atoms(POLYKETIDE_S, pk_starter_unit)
     if len(locations_sulphur) == 0:
         locations_sulphur = find_atoms(POLYKETIDE_S_INSERTED_O, pk_starter_unit)
+        if len(locations_sulphur) == 0:
+            locations_sulphur = find_atoms(POLYKETIDE_S_REDUCED_STARTER, pk_starter_unit)
     assert len(locations_sulphur) == 1
     
     sulphur_polyketide = locations_sulphur[0]
@@ -73,8 +79,9 @@ def label_pk_central_chain(pk_starter_unit):
                     methyl_group = False
 
                     # Build lists of neighbouring atom types
-                    if next_atom.type == 'C' and next_atom not in visited or next_atom.type == 'O' and \
-                            next_atom not in visited and len(next_atom.get_neighbours('C')) == 2:
+                    if next_atom.type == 'C' and next_atom not in visited or \
+                            (next_atom.type == 'O' and next_atom not in visited and
+                             len(next_atom.get_neighbours('C')) == 2):
 
                         # Keep track of carbon neighbours
 

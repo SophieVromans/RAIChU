@@ -1,6 +1,7 @@
 from paras.features import get_smiles
-from raichu.data.molecular_moieties import make_elongation_monomer
+from raichu.data.molecular_moieties import make_elongation_monomer, make_starter_monomer
 from enum import Enum, unique
+
 
 _PKS_TO_SMILES = {"WILDCARD": r"SC(C([*])C(O)=O)=O",
                   "MALONYL_COA": r"SC(CC(O)=O)=O",
@@ -21,7 +22,7 @@ _PKS_TO_SMILES = {"WILDCARD": r"SC(C([*])C(O)=O)=O",
                   "HYDROXY_MALONYL_COA_2S": r"SC(=O)[C@H](C(=O)O)O",
                   "CHLOROETHYL_MALONYL_COA": r"SC(C(C(=O)O)CC[Cl])=O",
                   "ISOBUTYRYL_COA": r"SC(=O)C(C)C",
-                  "GLYCINE": "C(C(=O)O)N",
+                  "GLYCINE": "SC(CN)=O",
                   "HYDROXY_PROPENOYL_COA_3_23E": r"[H]\C(O)=C/C(S)=O",
                   "HYDROXY_BUTENOYL_COA_3_23E": r"C\C(O)=C/C(S)=O",
                   "DIHYDROXY_BUTANOLYL_COA_2R3": r"CC(O)[C@@H](O)C(O)S",
@@ -32,7 +33,7 @@ _PKS_TO_SMILES = {"WILDCARD": r"SC(C([*])C(O)=O)=O",
                   "METHYL_HYDROXY_PROPENOYL_COA_2_3_23Z": r"[H]\C(O)=C(/C)C(S)=O",
                   "DIHYDROXY_BUTANOLYL_COA_23": r"CC(O)C(O)C(O)S",
                   "DIHYDROXY_BUTANOLYL_COA_2S3S": r"C[C@H](O)[C@H](O)C(O)S",
-                  "HEPTATRIENOYL_COA": r"SC(=O)C1=CC=CC=C3",
+                  "HEPTATRIENOYL_COA": r"SC(=O)C=CC=CC=C",
                   "HYDROXYPROPIONYL_COA_2R": r"C[C@@H](O)C(S)=O",
                   "DIHYDROXY_PROPANOLYL_COA_33": r"OC(O)CC(O)S",
                   "LACTYL_COA": r"C[C@@H](O)C(S)=O",
@@ -150,8 +151,10 @@ class PKSSubstrate(Substrate):
         super().__init__(name, smiles)
         if name in [v.name for v in PksElongationSubstrate]:
             self.elongation_monomer = make_elongation_monomer(self.name)
+            self.starter_monomer = None
         elif name in [v.name for v in PksStarterSubstrate]:
             self.elongation_monomer = None
+            self.starter_monomer = make_starter_monomer(self.name, self.smiles)
         else:
             raise ValueError(f"PKS substrate {self.name} is not recognised by RAIChU.")
 

@@ -34,7 +34,9 @@ from raichu.data.molecular_moieties import (
     REDUCED_SERINE,
     REDUCED_THREONINE,
     C1_AMINO_ACID_ATTACHED,
-    ARGININE_SECONDARY_N,
+    ARGININE_SECONDARY_N1,
+    ARGININE_SECONDARY_N2,
+    ARGININE_SECONDARY_N3,
     ESTER_BOND,
 )
 from pikachu.reactions.functional_groups import find_atoms, find_bonds
@@ -489,6 +491,8 @@ class TailoringEnzyme:
                 ][0]
                 bond = nitrogen.get_bond(carbon)
                 assert bond
+                if bond.type == "double":
+                    bond.make_single()
                 structure.break_bond(bond)
                 structure_1, structure_2 = structure.split_disconnected_structures()
                 if nitrogen in structure_1.graph:
@@ -709,7 +713,10 @@ class TailoringEnzyme:
             alpha_cs_amino_acid_backbone = find_atoms(C1_AMINO_ACID_ATTACHED, structure)
             possible_sites.extend([[atom] for atom in alpha_cs_amino_acid_backbone])
         elif self.type.name == "ARGINASE":
-            arginine_n = find_atoms(ARGININE_SECONDARY_N, structure)
+            arginine_n1 = find_atoms(ARGININE_SECONDARY_N_1, structure)
+            arginine_n2 = find_atoms(ARGININE_SECONDARY_N_2, structure)
+            arginine_n3 = find_atoms(ARGININE_SECONDARY_N_3, structure)
+            arginine_n = arginine_n1 + arginine_n2 + arginine_n3
             possible_sites.extend([[atom] for atom in arginine_n])
         elif self.type.name == "THIOPEPTIDE_CYCLASE":
             ser_thr_c = find_atoms(REDUCED_SERINE, structure) + find_atoms(
